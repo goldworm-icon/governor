@@ -18,22 +18,15 @@ from .utils import create_governor
 
 
 def init(sub_parser, parent_parser):
-    name = "deploy"
+    name = "update"
     desc = "Install or update governance SCORE"
 
     score_parser = sub_parser.add_parser(name, parents=[parent_parser], help=desc)
 
     score_parser.add_argument(
-        "--data-type",
+        "score_path",
         type=str,
-        required=True,
-        default="update",
-        help='ex) "install" or "update"'
-    )
-    score_parser.add_argument(
-        "--score-path",
-        type=str,
-        required=True,
+        nargs="?",
         help="path where governance SCORE is located\nex) ./governance"
     )
 
@@ -45,15 +38,7 @@ def run(args):
     keystore_path: str = args.keystore
     nid: int = args.nid
     password: str = args.password
-
-    data_type: str = args.data_type
     score_path: str = args.score_path
 
     governor = create_governor(url, nid, keystore_path, password)
-
-    if data_type == "install":
-        pass
-    elif data_type == "update":
-        return governor.update(score_path)
-    else:
-        raise ValueError("Invalid type: {type}")
+    return governor.update(score_path)

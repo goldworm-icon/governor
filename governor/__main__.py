@@ -17,12 +17,14 @@
 import argparse
 import sys
 
-from . import score_command
+from . import update_command
+from . import query_command
 
 
 def main():
     handlers = {
-        score_command.init
+        update_command.init,
+        query_command.init
     }
 
     parser = argparse.ArgumentParser(prog="governor", description="Governor SCORE controller")
@@ -47,16 +49,23 @@ def create_parent_parser() -> argparse.ArgumentParser:
     parent_parser.add_argument(
         "--url", "-u",
         type=str,
-        required=True,
+        required=False,
         default="http://localhost:9000/api/v3",
         help="node url"
     )
     parent_parser.add_argument(
-        "--nid",
+        "--nid", "-n",
         type=int,
-        required=True,
+        required=False,
         default=3,
         help="networkId ex) mainnet(1), testnet(2)"
+    )
+    parent_parser.add_argument(
+        "--password", "-p",
+        type=str,
+        required=False,
+        default=None,
+        help="keystore password"
     )
     parent_parser.add_argument(
         "--keystore", "-k",

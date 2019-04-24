@@ -113,9 +113,7 @@ class Governor:
         return self._query("getServiceConfig")
 
     def get_score_status(self, address):
-        params = {
-            "address": address
-        }
+        params = {"address": address}
         return self._query("getScoreStatus", params)
 
     def print_info(self):
@@ -130,16 +128,15 @@ class Governor:
         else:
             return False
 
-    def update(self, path: str) -> bytes:
+    def update(self, score_path: str) -> bytes:
         """Update governance SCORE
 
         :return: tx_hash
         """
-        content: bytes = gen_deploy_data_content(path)
+        content: bytes = gen_deploy_data_content(score_path)
 
-        tx_handler = TxHandler(self._icon_service)
-        ret = tx_handler.update(self.owner, content, limit=0x70000000)
-        print(ret)
+        tx_handler = TxHandler(self._icon_service, self._nid)
+        ret = tx_handler.update(self._owner, self.ADDRESS, content, limit=0x70000000)
 
         return ret
 
