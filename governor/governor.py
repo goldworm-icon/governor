@@ -158,6 +158,11 @@ class Governor:
 
         return self._invoke(method, params)
 
+    def get_step_costs(self):
+        method = "getStepCosts"
+
+        return self._query(method)
+
     def set_step_cost(self, step_type: str, cost: int) -> bytes:
         """
         URL: https://github.com/icon-project/governance#setstepcost

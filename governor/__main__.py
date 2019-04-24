@@ -18,16 +18,21 @@ import argparse
 import sys
 
 from . import update_command
-from . import query_command
+from . import step_command
+from . import revision_command
+from . import txresult_command
 
 
 def main():
     handlers = {
         update_command.init,
-        query_command.init
+        step_command.init,
+        revision_command.init,
+        txresult_command.init
     }
 
-    parser = argparse.ArgumentParser(prog="governor", description="Governor SCORE controller")
+    parser = argparse.ArgumentParser(
+        prog="governor", description="Governor SCORE controller")
     sub_parser = parser.add_subparsers(title="subcommands")
     parent_parser = create_parent_parser()
 

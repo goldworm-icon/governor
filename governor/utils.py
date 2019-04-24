@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = "create_governor_by_args"
+
 import getpass
 
 from iconsdk.icon_service import IconService
@@ -21,6 +23,15 @@ from iconsdk.providers.http_provider import HTTPProvider
 from iconsdk.wallet.wallet import KeyWallet
 
 from .governor import Governor
+
+
+def create_governor_by_args(args) -> Governor:
+    url: str = args.url
+    nid: int = args.nid
+    keystore_path: str = args.keystore
+    password: str = args.password
+
+    return create_governor(url, nid, keystore_path, password)
 
 
 def create_governor(url: str, nid, keystore_path: str, password: str) -> Governor:
@@ -32,3 +43,7 @@ def create_governor(url: str, nid, keystore_path: str, password: str) -> Governo
     print(f"ownerAddress: {owner_wallet.get_address()}")
 
     return Governor(icon_service, owner_wallet, nid)
+
+
+def hex_to_bytes(tx_hash: str) -> bytes:
+    return bytes.fromhex(tx_hash[2:])
