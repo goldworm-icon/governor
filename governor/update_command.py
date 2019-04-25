@@ -14,14 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .utils import create_governor
+from .governance import create_writer_by_args
 
 
-def init(sub_parser, parent_parser):
+def init(sub_parser, common_parent_parser, invoke_parent_parser):
     name = "update"
     desc = "Install or update governance SCORE"
 
-    score_parser = sub_parser.add_parser(name, parents=[parent_parser], help=desc)
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
 
     score_parser.add_argument(
         "score_path",
@@ -34,11 +37,7 @@ def init(sub_parser, parent_parser):
 
 
 def run(args):
-    url: str = args.url
-    keystore_path: str = args.keystore
-    nid: int = args.nid
-    password: str = args.password
     score_path: str = args.score_path
 
-    governor = create_governor(url, nid, keystore_path, password)
-    return governor.update(score_path)
+    writer = create_writer_by_args(args)
+    return writer.update(score_path)

@@ -14,12 +14,18 @@
 
 import json
 from time import sleep
+import getpass
 
 from iconsdk.builder.call_builder import CallBuilder
 from iconsdk.builder.transaction_builder import DeployTransactionBuilder, CallTransactionBuilder
 from iconsdk.exception import JSONRPCException
+from iconsdk.icon_service import IconService
 from iconsdk.libs.in_memory_zip import gen_deploy_data_content
+from iconsdk.providers.http_provider import HTTPProvider
 from iconsdk.signed_transaction import SignedTransaction
+from iconsdk.wallet.wallet import KeyWallet
+
+from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS
 
 
 def print_response(header, msg):
@@ -27,8 +33,6 @@ def print_response(header, msg):
 
 
 class TxHandler:
-    ZERO_ADDRESS = "cx0000000000000000000000000000000000000000"
-
     def __init__(self, service, nid: int):
         self._icon_service = service
         self._nid = nid
@@ -47,7 +51,7 @@ class TxHandler:
         return self._icon_service.send_transaction(SignedTransaction(transaction, owner))
 
     def install(self, owner, content, params=None, limit=0x50000000):
-        return self._deploy(owner, self.ZERO_ADDRESS, content, params, limit)
+        return self._deploy(owner, ZERO_ADDRESS, content, params, limit)
 
     def update(self, owner, to, content, params=None, limit=0x70000000):
         return self._deploy(owner, to, content, params, limit)
@@ -63,7 +67,7 @@ class TxHandler:
             .build()
         return self._icon_service.send_transaction(SignedTransaction(transaction, owner))
 
-    def get_tx_result(self, tx_hash: bytes):
+    def get_tx_result(self, tx_hash):
         while True:
             try:
                 tx_result = self._icon_service.get_transaction_result(tx_hash)
@@ -73,48 +77,53 @@ class TxHandler:
                 sleep(2)
 
 
-class Governor:
-    ADDRESS = "cx0000000000000000000000000000000000000001"
-
-    def __init__(self, service, owner, nid: int):
+class QueryHandler(object):
+    def __init__(self, service, nid: int, address: str = EOA_ADDRESS):
         self._icon_service = service
-        self._owner = owner
         self._nid = nid
+        self._from = address
 
-    def _invoke(self, method: str, params: dict, step_limit: int = 0x10000000) -> bytes:
-        tx_handler = self._create_tx_handler()
-        return tx_handler.invoke(
-            owner=self._owner,
-            to=self.ADDRESS,
-            limit=step_limit,
-            method=method,
-            params=params
-        )
-
-    def _query(self, method, params=None):
+    def call(self, method: str, params: dict):
         call = CallBuilder() \
-            .from_(self._owner.get_address()) \
-            .to(self.ADDRESS) \
+            .from_(self._from) \
+            .to(GOVERNANCE_ADDRESS) \
             .method(method) \
             .params(params) \
             .build()
         return self._icon_service.call(call)
 
-    def _create_tx_handler(self) -> TxHandler:
-        return TxHandler(self._icon_service, self._nid)
+    def get_tx_result(self, tx_hash: str):
+        tx_result = self._icon_service.get_transaction_result(tx_hash)
+        return tx_result
+
+
+class GovernanceReader(object):
+    def __init__(self, service, nid: int, address: str = EOA_ADDRESS):
+        self._icon_service = service
+        self._nid = nid
+        self._from = address
+
+    def _call(self, method, params=None):
+        call = CallBuilder() \
+            .from_(self._from) \
+            .to(GOVERNANCE_ADDRESS) \
+            .method(method) \
+            .params(params) \
+            .build()
+        return self._icon_service.call(call)
 
     def get_version(self):
-        return self._query("getVersion")
+        return self._call("getVersion")
 
     def get_revision(self):
-        return self._query("getRevision")
+        return self._call("getRevision")
 
     def get_service_config(self):
-        return self._query("getServiceConfig")
+        return self._call("getServiceConfig")
 
     def get_score_status(self, address):
         params = {"address": address}
-        return self._query("getScoreStatus", params)
+        return self._call("getScoreStatus", params)
 
     def print_info(self):
         print('[Governor]')
@@ -128,6 +137,33 @@ class Governor:
         else:
             return False
 
+    def get_step_costs(self):
+        return self._call(method="getStepCosts")
+
+    def get_tx_result(self, tx_hash: str):
+        tx_result = self._icon_service.get_transaction_result(tx_hash)
+        return tx_result
+
+
+class GovernanceWriter(object):
+    def __init__(self, service, nid: int, owner):
+        self._icon_service = service
+        self._owner = owner
+        self._nid = nid
+
+    def _call(self, method: str, params: dict, step_limit: int = 0x10000000) -> bytes:
+        tx_handler = self._create_tx_handler()
+        return tx_handler.invoke(
+            owner=self._owner,
+            to=GOVERNANCE_ADDRESS,
+            limit=step_limit,
+            method=method,
+            params=params
+        )
+
+    def _create_tx_handler(self) -> TxHandler:
+        return TxHandler(self._icon_service, self._nid)
+
     def update(self, score_path: str) -> bytes:
         """Update governance SCORE
 
@@ -136,7 +172,7 @@ class Governor:
         content: bytes = gen_deploy_data_content(score_path)
 
         tx_handler = TxHandler(self._icon_service, self._nid)
-        ret = tx_handler.update(self._owner, self.ADDRESS, content, limit=0x70000000)
+        ret = tx_handler.update(self._owner, GOVERNANCE_ADDRESS, content, limit=0x70000000)
 
         return ret
 
@@ -144,7 +180,7 @@ class Governor:
         method = "acceptScore"
         params = {"txHash": tx_hash}
 
-        return self._invoke(method, params)
+        return self._call(method, params)
 
     def set_revision(self, revision: int, name: str) -> bytes:
         """Set revision to governance SCORE
@@ -156,12 +192,7 @@ class Governor:
         method = "setRevision"
         params = {"revision": revision, "name": name}
 
-        return self._invoke(method, params)
-
-    def get_step_costs(self):
-        method = "getStepCosts"
-
-        return self._query(method)
+        return self._call(method, params)
 
     def set_step_cost(self, step_type: str, cost: int) -> bytes:
         """
@@ -185,8 +216,37 @@ class Governor:
             "cost": cost
         }
 
-        return self._invoke(method, params)
+        return self._call(method, params)
 
-    def get_tx_result(self, tx_hash: bytes):
-        tx_result = self._icon_service.get_transaction_result(tx_hash)
-        print(tx_result)
+
+def create_reader_by_args(args) -> GovernanceReader:
+    url: str = args.url
+    nid: int = args.nid
+
+    return create_reader(url, nid)
+
+
+def create_reader(url: str, nid: int) -> GovernanceReader:
+    icon_service = IconService(HTTPProvider(url))
+    return GovernanceReader(icon_service, nid)
+
+
+def create_writer_by_args(args) -> GovernanceWriter:
+    url: str = args.url
+    nid: int = args.nid
+    keystore_path: str = args.keystore
+    password: str = args.password
+
+    if password is None:
+        password = getpass.getpass("> Password: ")
+
+    return create_writer(url, nid, keystore_path, password)
+
+
+def create_writer(url: str, nid: int, keystore_path: str, password: str) -> GovernanceWriter:
+    icon_service = IconService(HTTPProvider(url))
+
+    owner_wallet = KeyWallet.load(keystore_path, password)
+    print(f"ownerAddress: {owner_wallet.get_address()}")
+
+    return GovernanceWriter(icon_service, nid, owner_wallet)

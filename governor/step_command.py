@@ -14,14 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .utils import create_governor_by_args
+from .governance import create_reader_by_args, create_writer_by_args
 
 
-def init(sub_parser, parent_parser):
-    name = "step"
-    desc = "step command"
+def init(sub_parser, common_parent_parser, invoke_parent_parser):
+    _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_query(sub_parser, common_parent_parser)
 
-    score_parser = sub_parser.add_parser(name, parents=[parent_parser], help=desc)
+
+def _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "setstep"
+    desc = "setStepCost command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
 
     score_parser.add_argument(
         "step_type",
@@ -37,16 +45,29 @@ def init(sub_parser, parent_parser):
         help="cost ex) 1000"
     )
 
-    score_parser.set_defaults(func=run)
+    score_parser.set_defaults(func=_run_set_step_cost)
 
 
-def run(args):
+def _init_for_query(sub_parser, common_parent_parser):
+    name = "getstep"
+    desc = "getStepCosts command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.set_defaults(func=_run_get_step_costs)
+
+
+def _run_get_step_costs(args):
+    reader = create_reader_by_args(args)
+    return reader.get_step_costs()
+
+
+def _run_set_step_cost(args):
     step_type: str = args.step_type
     cost: int = args.cost
 
-    governor = create_governor_by_args(args)
-
-    if step_type is None:
-        return governor.get_step_costs()
-    else:
-        return governor.set_step_cost(step_type, cost)
+    writer = create_writer_by_args(args)
+    return writer.set_step_cost(step_type, cost)

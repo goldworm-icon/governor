@@ -14,14 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .utils import create_governor_by_args, hex_to_bytes
+from .governance import create_reader_by_args
 
 
-def init(sub_parser, parent_parser):
+def init(sub_parser, common_parent_parser, invoke_parent_parser):
     name = "txresult"
-    desc = "query transaction result"
+    desc = "getTransactionResult command"
 
-    score_parser = sub_parser.add_parser(name, parents=[parent_parser], help=desc)
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
 
     score_parser.add_argument(
         "tx_hash",
@@ -34,7 +37,7 @@ def init(sub_parser, parent_parser):
 
 
 def run(args):
-    tx_hash: bytes = hex_to_bytes(args.tx_hash)
+    tx_hash: str = args.tx_hash
 
-    governor = create_governor_by_args(args)
-    return governor.get_tx_result(tx_hash)
+    reader = create_reader_by_args(args)
+    return reader.get_tx_result(tx_hash)

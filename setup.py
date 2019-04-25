@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="governor",
     version="0.0.1",
-    author="Chiwon Cho",
+    author="goldworm",
     author_email="goldworm@iconloop.com",
     description="Governor SCORE handler",
     long_description=long_description,
@@ -18,4 +18,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
     ],
+    entry_points={
+        'console_scripts': [
+            'governor=governor.__main__:main'
+        ]
+    }
 )

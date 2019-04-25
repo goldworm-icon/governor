@@ -14,14 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .utils import create_governor_by_args
+from .governance import create_writer_by_args, create_reader_by_args
 
 
-def init(sub_parser, parent_parser):
-    name = "rev"
-    desc = "revision command"
+def init(sub_parser, common_parent_parser, invoke_parent_parser):
+    _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_query(sub_parser, common_parent_parser)
 
-    score_parser = sub_parser.add_parser(name, parents=[parent_parser], help=desc)
+
+def _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "setrev"
+    desc = "setRevision command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
 
     score_parser.add_argument(
         "revision",
@@ -38,16 +46,29 @@ def init(sub_parser, parent_parser):
         help="iconservice version ex) 1.2.3"
     )
 
-    score_parser.set_defaults(func=run)
+    score_parser.set_defaults(func=_run_set_revision)
 
 
-def run(args):
+def _init_for_query(sub_parser, common_parent_parser):
+    name = "getrev"
+    desc = "getRevision command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.set_defaults(func=_run_get_revision)
+
+
+def _run_set_revision(args):
     revision: int = args.revision
     name: str = args.name
 
-    governor = create_governor_by_args(args)
+    writer = create_writer_by_args(args)
+    return writer.set_revision(revision, name)
 
-    if revision < 0:
-        return governor.get_revision()
-    else:
-        return governor.set_revision(revision, name)
+
+def _run_get_revision(args):
+    reader = create_reader_by_args(args)
+    return reader.get_revision()

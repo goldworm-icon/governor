@@ -24,20 +24,22 @@ from . import txresult_command
 
 
 def main():
-    handlers = {
+    handlers = [
         update_command.init,
         step_command.init,
         revision_command.init,
         txresult_command.init
-    }
+    ]
 
     parser = argparse.ArgumentParser(
         prog="governor", description="Governor SCORE controller")
     sub_parser = parser.add_subparsers(title="subcommands")
-    parent_parser = create_parent_parser()
+
+    common_parent_parser = create_common_parser()
+    invoke_parent_parser = create_invoke_parser()
 
     for handler in handlers:
-        handler(sub_parser, parent_parser)
+        handler(sub_parser, common_parent_parser, invoke_parent_parser)
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -49,7 +51,7 @@ def main():
     return args.func(args)
 
 
-def create_parent_parser() -> argparse.ArgumentParser:
+def create_common_parser() -> argparse.ArgumentParser:
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument(
         "--url", "-u",
@@ -66,6 +68,24 @@ def create_parent_parser() -> argparse.ArgumentParser:
         help="networkId ex) mainnet(1), testnet(2)"
     )
     parent_parser.add_argument(
+        "--verbose", "-v",
+        required=False,
+        action="store_true"
+    )
+    parent_parser.add_argument(
+        "--yes", "-y",
+        action="store_true",
+        required=False,
+        help="Automatic yes to prompts"
+    )
+
+    return parent_parser
+
+
+def create_invoke_parser() -> argparse.ArgumentParser:
+    parent_parser = argparse.ArgumentParser(add_help=False)
+
+    parent_parser.add_argument(
         "--password", "-p",
         type=str,
         required=False,
@@ -77,17 +97,6 @@ def create_parent_parser() -> argparse.ArgumentParser:
         type=str,
         required=True,
         help="keystore file path"
-    )
-    parent_parser.add_argument(
-        "--verbose", "-v",
-        required=False,
-        action="store_true"
-    )
-    parent_parser.add_argument(
-        "--yes", "-y",
-        action="store_true",
-        required=False,
-        help="Automatic yes to prompts"
     )
 
     return parent_parser
