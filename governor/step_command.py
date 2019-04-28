@@ -13,18 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pprint
 
 from .governance import create_reader_by_args, create_writer_by_args
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
-    _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser)
-    _init_for_query(sub_parser, common_parent_parser)
+    _init_for_set_step_cost(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_get_step_costs(sub_parser, common_parent_parser)
+    _init_for_get_step_price(sub_parser, common_parent_parser)
 
 
-def _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser):
-    name = "setstep"
-    desc = "setStepCost command"
+def _init_for_set_step_cost(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "setStepCost"
+    desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
         name,
@@ -45,12 +47,23 @@ def _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser):
         help="cost ex) 1000"
     )
 
-    score_parser.set_defaults(func=_run_set_step_cost)
+    score_parser.set_defaults(func=_set_step_cost)
 
 
-def _init_for_query(sub_parser, common_parent_parser):
-    name = "getstep"
-    desc = "getStepCosts command"
+def _set_step_cost(args) -> int:
+    step_type: str = args.step_type
+    cost: int = args.cost
+
+    writer = create_writer_by_args(args)
+    result = writer.set_step_cost(step_type, cost)
+    pprint.pprint(result)
+
+    return 0
+
+
+def _init_for_get_step_costs(sub_parser, common_parent_parser):
+    name = "getStepCosts"
+    desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
         name,
@@ -76,9 +89,21 @@ def _convert_hex_to_int(step_costs: dict) -> dict:
     return step_costs
 
 
-def _run_set_step_cost(args):
-    step_type: str = args.step_type
-    cost: int = args.cost
+def _init_for_get_step_price(sub_parser, common_parent_parser):
+    name = "getStepPrice"
+    desc = f"{name} command"
 
-    writer = create_writer_by_args(args)
-    return writer.set_step_cost(step_type, cost)
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.set_defaults(func=_get_step_price)
+
+
+def _get_step_price(args) -> int:
+    reader = create_reader_by_args(args)
+    step_price: str = reader.get_step_price()
+    print(f"stepPrice: {int(step_price, 16)}")
+
+    return 0

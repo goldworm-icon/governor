@@ -35,12 +35,14 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
         help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20"
     )
 
-    score_parser.set_defaults(func=run)
+    score_parser.set_defaults(func=_get_tx_result)
 
 
-def run(args) -> dict:
+def _get_tx_result(args) -> int:
     tx_hash: str = args.tx_hash
 
     reader = create_reader_by_args(args)
     tx_result: dict = reader.get_tx_result(tx_hash)
-    return tx_result
+    pprint.pprint(tx_result)
+
+    return 0

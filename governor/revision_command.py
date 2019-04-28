@@ -14,17 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pprint
+
 from .governance import create_writer_by_args, create_reader_by_args
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
-    _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser)
-    _init_for_query(sub_parser, common_parent_parser)
+    _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_get_revision(sub_parser, common_parent_parser)
 
 
-def _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser):
-    name = "setrev"
-    desc = "setRevision command"
+def _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "setRevision"
+    desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
         name,
@@ -46,30 +48,36 @@ def _init_for_invoke(sub_parser, common_parent_parser, invoke_parent_parser):
         help="iconservice version ex) 1.2.3"
     )
 
-    score_parser.set_defaults(func=_run_set_revision)
+    score_parser.set_defaults(func=_set_revision)
 
 
-def _init_for_query(sub_parser, common_parent_parser):
-    name = "getrev"
-    desc = "getRevision command"
+def _set_revision(args) -> int:
+    revision: int = args.revision
+    name: str = args.name
+
+    writer = create_writer_by_args(args)
+    result = writer.set_revision(revision, name)
+    pprint.pprint(result)
+
+    return 0
+
+
+def _init_for_get_revision(sub_parser, common_parent_parser):
+    name = "getRevision"
+    desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
         name,
         parents=[common_parent_parser],
         help=desc)
 
-    score_parser.set_defaults(func=_run_get_revision)
+    score_parser.set_defaults(func=_get_revision)
 
 
-def _run_set_revision(args):
-    revision: int = args.revision
-    name: str = args.name
-
-    writer = create_writer_by_args(args)
-    return writer.set_revision(revision, name)
-
-
-def _run_get_revision(args):
+def _get_revision(args) -> int:
     reader = create_reader_by_args(args)
-    return reader.get_revision()
+    revision = reader.get_revision()
+    pprint.pprint(revision)
+
+    return 0
 

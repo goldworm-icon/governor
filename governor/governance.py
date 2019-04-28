@@ -140,6 +140,9 @@ class GovernanceReader(object):
     def get_step_costs(self):
         return self._call(method="getStepCosts")
 
+    def get_step_price(self):
+        return self._call(method="getStepPrice")
+
     def get_tx_result(self, tx_hash: str) -> dict:
         tx_result = self._icon_service.get_transaction_result(tx_hash)
         return tx_result

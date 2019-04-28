@@ -14,12 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pprint
+
 from .governance import create_writer_by_args, create_reader_by_args
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
     _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser)
-    _init_for_score_status(sub_parser, common_parent_parser)
+    _init_for_get_score_status(sub_parser, common_parent_parser)
+    _init_for_get_service_config(sub_parser, common_parent_parser)
 
 
 def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -41,16 +44,19 @@ def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
     score_parser.set_defaults(func=_update_governance_score)
 
 
-def _update_governance_score(args):
+def _update_governance_score(args) -> int:
     score_path: str = args.score_path
 
     writer = create_writer_by_args(args)
-    return writer.update(score_path)
+    result = writer.update(score_path)
+    pprint.pprint(result)
+
+    return 0
 
 
-def _init_for_score_status(sub_parser, common_parent_parser):
-    name = "getscorestatus"
-    desc = "getScoreStatus command"
+def _init_for_get_score_status(sub_parser, common_parent_parser):
+    name = "getScoreStatus"
+    desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
         name,
@@ -64,11 +70,34 @@ def _init_for_score_status(sub_parser, common_parent_parser):
         help="SCORE address ex) cx8a96c0dcf0567635309809d391908c32fbca5317"
     )
 
-    score_parser.set_defaults(func=_get_score_status)
+    score_parser.set_defaults(func=_get_service_config)
 
 
-def _get_score_status(args) -> dict:
+def _get_score_status(args) -> int:
     address: str = args.address
 
     reader = create_reader_by_args(args)
-    return reader.get_score_status(address)
+    result: dict = reader.get_score_status(address)
+    pprint.pprint(result)
+
+    return 0
+
+
+def _init_for_get_service_config(sub_parser, common_parent_parser):
+    name = "getServiceConfig"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.set_defaults(func=_get_service_config)
+
+
+def _get_service_config(args) -> int:
+    reader = create_reader_by_args(args)
+    result: dict = reader.get_service_config()
+    pprint.pprint(result)
+
+    return 0

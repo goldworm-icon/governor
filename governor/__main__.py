@@ -15,18 +15,18 @@
 # limitations under the License.
 
 import argparse
-import pprint
 import sys
 
 from . import revision_command
+from . import score_command
 from . import step_command
 from . import txresult_command
-from . import update_command
+from .constants import DEFAULT_URL, DEFAULT_NID
 
 
 def main():
     handlers = [
-        update_command.init,
+        score_command.init,
         step_command.init,
         revision_command.init,
         txresult_command.init
@@ -49,8 +49,7 @@ def main():
     args = parser.parse_args()
     print(args)
 
-    ret = args.func(args)
-    pprint.pprint(ret)
+    return args.func(args)
 
 
 def create_common_parser() -> argparse.ArgumentParser:
@@ -59,15 +58,15 @@ def create_common_parser() -> argparse.ArgumentParser:
         "--url", "-u",
         type=str,
         required=False,
-        default="http://localhost:9000/api/v3",
-        help="node url"
+        default=DEFAULT_URL,
+        help=f"node url default) {DEFAULT_URL}"
     )
     parent_parser.add_argument(
         "--nid", "-n",
         type=int,
         required=False,
-        default=3,
-        help="networkId ex) mainnet(1), testnet(2)"
+        default=DEFAULT_NID,
+        help=f"networkId default({DEFAULT_NID} ex) mainnet(1), testnet(2)"
     )
     parent_parser.add_argument(
         "--verbose", "-v",
