@@ -72,3 +72,4 @@ def _run_set_revision(args):
 def _run_get_revision(args):
     reader = create_reader_by_args(args)
     return reader.get_revision()
+

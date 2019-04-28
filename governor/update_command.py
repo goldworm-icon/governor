@@ -14,10 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .governance import create_writer_by_args
+from .governance import create_writer_by_args, create_reader_by_args
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
+    _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_score_status(sub_parser, common_parent_parser)
+
+
+def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
     name = "update"
     desc = "Install or update governance SCORE"
 
@@ -33,11 +38,37 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
         help="path where governance SCORE is located\nex) ./governance"
     )
 
-    score_parser.set_defaults(func=run)
+    score_parser.set_defaults(func=_update_governance_score)
 
 
-def run(args):
+def _update_governance_score(args):
     score_path: str = args.score_path
 
     writer = create_writer_by_args(args)
     return writer.update(score_path)
+
+
+def _init_for_score_status(sub_parser, common_parent_parser):
+    name = "getscorestatus"
+    desc = "getScoreStatus command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help="SCORE address ex) cx8a96c0dcf0567635309809d391908c32fbca5317"
+    )
+
+    score_parser.set_defaults(func=_get_score_status)
+
+
+def _get_score_status(args) -> dict:
+    address: str = args.address
+
+    reader = create_reader_by_args(args)
+    return reader.get_score_status(address)

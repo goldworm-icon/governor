@@ -62,7 +62,18 @@ def _init_for_query(sub_parser, common_parent_parser):
 
 def _run_get_step_costs(args):
     reader = create_reader_by_args(args)
-    return reader.get_step_costs()
+    step_costs: dict = reader.get_step_costs()
+    return _convert_hex_to_int(step_costs)
+
+
+def _convert_hex_to_int(step_costs: dict) -> dict:
+    for key in step_costs:
+        value: str = step_costs[key]
+        assert isinstance(value, str)
+
+        step_costs[key] = int(value, 16)
+
+    return step_costs
 
 
 def _run_set_step_cost(args):

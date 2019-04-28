@@ -15,12 +15,13 @@
 # limitations under the License.
 
 import argparse
+import pprint
 import sys
 
-from . import update_command
-from . import step_command
 from . import revision_command
+from . import step_command
 from . import txresult_command
+from . import update_command
 
 
 def main():
@@ -48,7 +49,8 @@ def main():
     args = parser.parse_args()
     print(args)
 
-    return args.func(args)
+    ret = args.func(args)
+    pprint.pprint(ret)
 
 
 def create_common_parser() -> argparse.ArgumentParser:

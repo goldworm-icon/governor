@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pprint
+
 from .governance import create_reader_by_args
 
 
@@ -36,8 +38,9 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
     score_parser.set_defaults(func=run)
 
 
-def run(args):
+def run(args) -> dict:
     tx_hash: str = args.tx_hash
 
     reader = create_reader_by_args(args)
-    return reader.get_tx_result(tx_hash)
+    tx_result: dict = reader.get_tx_result(tx_hash)
+    return tx_result

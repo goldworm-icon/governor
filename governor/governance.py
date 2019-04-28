@@ -121,7 +121,7 @@ class GovernanceReader(object):
     def get_service_config(self):
         return self._call("getServiceConfig")
 
-    def get_score_status(self, address):
+    def get_score_status(self, address: str) -> dict:
         params = {"address": address}
         return self._call("getScoreStatus", params)
 
@@ -140,7 +140,7 @@ class GovernanceReader(object):
     def get_step_costs(self):
         return self._call(method="getStepCosts")
 
-    def get_tx_result(self, tx_hash: str):
+    def get_tx_result(self, tx_hash: str) -> dict:
         tx_result = self._icon_service.get_transaction_result(tx_hash)
         return tx_result
 
