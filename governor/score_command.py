@@ -21,6 +21,9 @@ from .governance import create_writer_by_args, create_reader_by_args
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
     _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_accept_score(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_reject_score(sub_parser, common_parent_parser, invoke_parent_parser)
+
     _init_for_get_score_status(sub_parser, common_parent_parser)
     _init_for_get_service_config(sub_parser, common_parent_parser)
 
@@ -98,6 +101,72 @@ def _init_for_get_service_config(sub_parser, common_parent_parser):
 def _get_service_config(args) -> int:
     reader = create_reader_by_args(args)
     result: dict = reader.get_service_config()
+    pprint.pprint(result)
+
+    return 0
+
+
+def _init_for_accept_score(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "acceptScore"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "tx_hash",
+        type=str,
+        nargs="?",
+        help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20"
+    )
+
+    score_parser.set_defaults(func=_accept_score)
+
+
+def _accept_score(args) -> int:
+    tx_hash: str = args.tx_hash
+
+    writer = create_writer_by_args(args)
+    result = writer.accept_score(tx_hash)
+    pprint.pprint(result)
+
+    return 0
+
+
+def _init_for_reject_score(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "rejectScore"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "tx_hash",
+        type=str,
+        nargs="?",
+        help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20"
+    )
+
+    score_parser.add_argument(
+        "reason",
+        type=str,
+        nargs="?",
+        help="reason ex) 'SCORE cannot use file API'"
+    )
+
+    score_parser.set_defaults(func=_reject_score)
+
+
+def _reject_score(args) -> int:
+    tx_hash: str = args.tx_hash
+    reason: str = args.reason
+
+    writer = create_writer_by_args(args)
+    result = writer.reject_score(tx_hash, reason)
     pprint.pprint(result)
 
     return 0

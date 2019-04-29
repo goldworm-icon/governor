@@ -70,13 +70,17 @@ def _init_for_get_step_costs(sub_parser, common_parent_parser):
         parents=[common_parent_parser],
         help=desc)
 
-    score_parser.set_defaults(func=_run_get_step_costs)
+    score_parser.set_defaults(func=_get_step_costs)
 
 
-def _run_get_step_costs(args):
+def _get_step_costs(args) -> int:
     reader = create_reader_by_args(args)
     step_costs: dict = reader.get_step_costs()
-    return _convert_hex_to_int(step_costs)
+    step_costs = _convert_hex_to_int(step_costs)
+
+    pprint.pprint(step_costs)
+
+    return 0
 
 
 def _convert_hex_to_int(step_costs: dict) -> dict:

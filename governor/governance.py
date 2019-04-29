@@ -179,9 +179,15 @@ class GovernanceWriter(object):
 
         return ret
 
-    def accept_score(self, tx_hash: bytes) -> bytes:
+    def accept_score(self, tx_hash: str) -> bytes:
         method = "acceptScore"
         params = {"txHash": tx_hash}
+
+        return self._call(method, params)
+
+    def reject_score(self, tx_hash: str, reason: str) -> bytes:
+        method = "rejectScore"
+        params = {"txHash": tx_hash, "reason": reason}
 
         return self._call(method, params)
 
