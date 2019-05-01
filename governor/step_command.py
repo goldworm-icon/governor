@@ -50,15 +50,12 @@ def _init_for_set_step_cost(sub_parser, common_parent_parser, invoke_parent_pars
     score_parser.set_defaults(func=_set_step_cost)
 
 
-def _set_step_cost(args) -> int:
+def _set_step_cost(args) -> str:
     step_type: str = args.step_type
     cost: int = args.cost
 
     writer = create_writer_by_args(args)
-    result = writer.set_step_cost(step_type, cost)
-    pprint.pprint(result)
-
-    return 0
+    return writer.set_step_cost(step_type, cost)
 
 
 def _init_for_get_step_costs(sub_parser, common_parent_parser):

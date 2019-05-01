@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import getpass
 import json
 from time import sleep
-import getpass
 
 from iconsdk.builder.call_builder import CallBuilder
 from iconsdk.builder.transaction_builder import DeployTransactionBuilder, CallTransactionBuilder
@@ -167,7 +167,7 @@ class GovernanceWriter(object):
     def _create_tx_handler(self) -> TxHandler:
         return TxHandler(self._icon_service, self._nid)
 
-    def update(self, score_path: str) -> bytes:
+    def update(self, score_path: str) -> str:
         """Update governance SCORE
 
         :return: tx_hash
@@ -179,19 +179,19 @@ class GovernanceWriter(object):
 
         return ret
 
-    def accept_score(self, tx_hash: str) -> bytes:
+    def accept_score(self, tx_hash: str) -> str:
         method = "acceptScore"
         params = {"txHash": tx_hash}
 
         return self._call(method, params)
 
-    def reject_score(self, tx_hash: str, reason: str) -> bytes:
+    def reject_score(self, tx_hash: str, reason: str) -> str:
         method = "rejectScore"
         params = {"txHash": tx_hash, "reason": reason}
 
         return self._call(method, params)
 
-    def set_revision(self, revision: int, name: str) -> bytes:
+    def set_revision(self, revision: int, name: str) -> str:
         """Set revision to governance SCORE
 
         :param revision:
@@ -203,7 +203,7 @@ class GovernanceWriter(object):
 
         return self._call(method, params)
 
-    def set_step_cost(self, step_type: str, cost: int) -> bytes:
+    def set_step_cost(self, step_type: str, cost: int) -> str:
         """
         URL: https://github.com/icon-project/governance#setstepcost
 
@@ -226,6 +226,10 @@ class GovernanceWriter(object):
         }
 
         return self._call(method, params)
+
+    def get_tx_result(self, tx_hash: str) -> dict:
+        tx_result = self._icon_service.get_transaction_result(tx_hash)
+        return tx_result
 
 
 def create_reader_by_args(args) -> GovernanceReader:
@@ -259,3 +263,7 @@ def create_writer(url: str, nid: int, keystore_path: str, password: str) -> Gove
     print(f"ownerAddress: {owner_wallet.get_address()}")
 
     return GovernanceWriter(icon_service, nid, owner_wallet)
+
+
+def create_icon_service(url: str) -> IconService:
+    return IconService(HTTPProvider(url))

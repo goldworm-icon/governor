@@ -51,15 +51,12 @@ def _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parse
     score_parser.set_defaults(func=_set_revision)
 
 
-def _set_revision(args) -> int:
+def _set_revision(args) -> str:
     revision: int = args.revision
     name: str = args.name
 
     writer = create_writer_by_args(args)
-    result = writer.set_revision(revision, name)
-    pprint.pprint(result)
-
-    return 0
+    return writer.set_revision(revision, name)
 
 
 def _init_for_get_revision(sub_parser, common_parent_parser):

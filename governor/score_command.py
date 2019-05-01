@@ -47,14 +47,11 @@ def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
     score_parser.set_defaults(func=_update_governance_score)
 
 
-def _update_governance_score(args) -> int:
+def _update_governance_score(args) -> str:
     score_path: str = args.score_path
 
     writer = create_writer_by_args(args)
-    result = writer.update(score_path)
-    pprint.pprint(result)
-
-    return 0
+    return writer.update(score_path)
 
 
 def _init_for_get_score_status(sub_parser, common_parent_parser):
@@ -125,14 +122,11 @@ def _init_for_accept_score(sub_parser, common_parent_parser, invoke_parent_parse
     score_parser.set_defaults(func=_accept_score)
 
 
-def _accept_score(args) -> int:
+def _accept_score(args) -> str:
     tx_hash: str = args.tx_hash
 
     writer = create_writer_by_args(args)
-    result = writer.accept_score(tx_hash)
-    pprint.pprint(result)
-
-    return 0
+    return writer.accept_score(tx_hash)
 
 
 def _init_for_reject_score(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -161,12 +155,9 @@ def _init_for_reject_score(sub_parser, common_parent_parser, invoke_parent_parse
     score_parser.set_defaults(func=_reject_score)
 
 
-def _reject_score(args) -> int:
+def _reject_score(args) -> str:
     tx_hash: str = args.tx_hash
     reason: str = args.reason
 
     writer = create_writer_by_args(args)
-    result = writer.reject_score(tx_hash, reason)
-    pprint.pprint(result)
-
-    return 0
+    return writer.reject_score(tx_hash, reason)

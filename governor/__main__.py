@@ -15,16 +15,20 @@
 # limitations under the License.
 
 import argparse
+import pprint
 import sys
+import time
+from typing import Optional
 
 from . import revision_command
 from . import score_command
 from . import step_command
 from . import txresult_command
 from .constants import DEFAULT_URL, DEFAULT_NID
+from .governance import create_icon_service
 
 
-def main():
+def main() -> int:
     handlers = [
         score_command.init,
         step_command.init,
@@ -47,9 +51,52 @@ def main():
         return 1
 
     args = parser.parse_args()
-    print(args)
+    _print_arguments(args)
 
-    return args.func(args)
+    ret = _prompt_continue(args)
+    if ret == 0:
+        ret: Optional[int, str] = args.func(args)
+        if isinstance(ret, str):
+            if not args.no_result:
+                ret = _print_tx_result(args, tx_hash=ret)
+            else:
+                print(f"txresult: {ret}")
+                ret = 0
+
+        return ret
+
+
+def _print_arguments(args):
+    print("Arguments ======================")
+
+    for name, value in args._get_kwargs():
+        print(f"* {name}: {value}")
+
+    print("================================")
+
+
+def _prompt_continue(args) -> int:
+    if hasattr(args, "yes") and not args.yes:
+        ret = input("Continue? [Y/n]")
+        if ret in ("n", "N"):
+            return 1
+
+    return 0
+
+
+def _print_tx_result(args, tx_hash: str) -> int:
+    if tx_hash.startswith("0x") and len(tx_hash) == 66:
+        time.sleep(2)
+        icon_service = create_icon_service(args.url)
+        tx_result: dict = icon_service.get_transaction_result(tx_hash)
+        pprint.pprint(tx_result)
+        ret = tx_result["status"]
+    else:
+        # tx_hash is not tx hash format
+        print(tx_hash)
+        ret = 1
+
+    return ret
 
 
 def create_common_parser() -> argparse.ArgumentParser:
@@ -73,17 +120,16 @@ def create_common_parser() -> argparse.ArgumentParser:
         required=False,
         action="store_true"
     )
-    parent_parser.add_argument(
-        "--yes", "-y",
-        action="store_true",
-        required=False,
-        help="Automatic yes to prompts"
-    )
 
     return parent_parser
 
 
 def create_invoke_parser() -> argparse.ArgumentParser:
+    """Common options for invoke commands
+
+    :return:
+    """
+
     parent_parser = argparse.ArgumentParser(add_help=False)
 
     parent_parser.add_argument(
@@ -99,10 +145,21 @@ def create_invoke_parser() -> argparse.ArgumentParser:
         required=True,
         help="keystore file path"
     )
+    parent_parser.add_argument(
+        "--no-result",
+        action="store_true",
+        required=False,
+        help="Display transaction result automatically for invoke commands"
+    )
+    parent_parser.add_argument(
+        "--yes", "-y",
+        action="store_true",
+        required=False,
+        help="Automatic yes to prompts"
+    )
 
     return parent_parser
 
 
 if __name__ == "__main__":
-    ret = main()
-    sys.exit(ret)
+    sys.exit(main())
