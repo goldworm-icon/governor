@@ -13,9 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pprint
+from typing import Optional
 
 from .governance import create_reader_by_args, create_writer_by_args
+from .utils import print_response
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -55,7 +56,9 @@ def _set_step_cost(args) -> str:
     cost: int = args.cost
 
     writer = create_writer_by_args(args)
-    return writer.set_step_cost(step_type, cost)
+    tx_result: Optional[str] = writer.set_step_cost(step_type, cost)
+
+    return tx_result
 
 
 def _init_for_get_step_costs(sub_parser, common_parent_parser):
@@ -75,7 +78,7 @@ def _get_step_costs(args) -> int:
     step_costs: dict = reader.get_step_costs()
     step_costs = _convert_hex_to_int(step_costs)
 
-    pprint.pprint(step_costs)
+    print_response(step_costs)
 
     return 0
 
@@ -105,6 +108,7 @@ def _init_for_get_step_price(sub_parser, common_parent_parser):
 def _get_step_price(args) -> int:
     reader = create_reader_by_args(args)
     step_price: str = reader.get_step_price()
-    print(f"stepPrice: {int(step_price, 16)}")
+
+    print_response(f"stepPrice: {int(step_price, 16)}")
 
     return 0

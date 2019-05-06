@@ -12,30 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
 import getpass
-import json
-from time import sleep
+import os.path
 
 from iconsdk.builder.call_builder import CallBuilder
 from iconsdk.builder.transaction_builder import DeployTransactionBuilder, CallTransactionBuilder
-from iconsdk.exception import JSONRPCException
 from iconsdk.icon_service import IconService
 from iconsdk.libs.in_memory_zip import gen_deploy_data_content
 from iconsdk.providers.http_provider import HTTPProvider
 from iconsdk.signed_transaction import SignedTransaction
 from iconsdk.wallet.wallet import KeyWallet
 
-from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS
+from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS, COLUMN
+from .utils import print_title, print_dict
 
 
-def print_response(header, msg):
-    print(f'{header}: {json.dumps(msg, indent=4)}')
+def _print_request(title: str, content: dict):
+    print_title(title, COLUMN)
+    print_dict(content)
+    print("")
 
 
 class TxHandler:
-    def __init__(self, service, nid: int):
+    def __init__(self, service, nid: int, on_send_request: callable(dict)):
         self._icon_service = service
         self._nid = nid
+        self._on_send_request = on_send_request
 
     def _deploy(self, owner, to, content, params, limit):
         transaction = DeployTransactionBuilder() \
@@ -48,7 +51,18 @@ class TxHandler:
             .content(content) \
             .params(params) \
             .build()
+
+        ret = self._call_on_send_request(transaction.to_dict())
+        if not ret:
+            return
+
         return self._icon_service.send_transaction(SignedTransaction(transaction, owner))
+
+    def _call_on_send_request(self, content: dict) -> bool:
+        if self._on_send_request:
+            return self._on_send_request(content)
+
+        return False
 
     def install(self, owner, content, params=None, limit=0x50000000):
         return self._deploy(owner, ZERO_ADDRESS, content, params, limit)
@@ -65,40 +79,28 @@ class TxHandler:
             .method(method) \
             .params(params) \
             .build()
+
+        self._call_on_send_request(transaction.to_dict())
+
         return self._icon_service.send_transaction(SignedTransaction(transaction, owner))
 
-    def get_tx_result(self, tx_hash):
-        while True:
-            try:
-                tx_result = self._icon_service.get_transaction_result(tx_hash)
-                return tx_result
-            except JSONRPCException as e:
-                print(e.message)
-                sleep(2)
+
+class GovernanceListener(object):
+    def __init__(self):
+        self._on_send_request = None
+
+    def set_on_send_request(self, func: callable(dict)):
+        self._on_send_request = func
+
+    @property
+    def on_send_request(self) -> callable(dict):
+        return self._on_send_request
 
 
-class QueryHandler(object):
+class GovernanceReader(GovernanceListener):
     def __init__(self, service, nid: int, address: str = EOA_ADDRESS):
-        self._icon_service = service
-        self._nid = nid
-        self._from = address
+        super().__init__()
 
-    def call(self, method: str, params: dict):
-        call = CallBuilder() \
-            .from_(self._from) \
-            .to(GOVERNANCE_ADDRESS) \
-            .method(method) \
-            .params(params) \
-            .build()
-        return self._icon_service.call(call)
-
-    def get_tx_result(self, tx_hash: str):
-        tx_result = self._icon_service.get_transaction_result(tx_hash)
-        return tx_result
-
-
-class GovernanceReader(object):
-    def __init__(self, service, nid: int, address: str = EOA_ADDRESS):
         self._icon_service = service
         self._nid = nid
         self._from = address
@@ -110,6 +112,9 @@ class GovernanceReader(object):
             .method(method) \
             .params(params) \
             .build()
+
+        self.on_send_request(call.to_dict())
+
         return self._icon_service.call(call)
 
     def get_version(self):
@@ -124,11 +129,6 @@ class GovernanceReader(object):
     def get_score_status(self, address: str) -> dict:
         params = {"address": address}
         return self._call("getScoreStatus", params)
-
-    def print_info(self):
-        print('[Governor]')
-        print_response('Version', self.get_version())
-        print_response('Revision', self.get_revision())
 
     def check_if_audit_enabled(self):
         service_config = self.get_service_config()
@@ -148,13 +148,15 @@ class GovernanceReader(object):
         return tx_result
 
 
-class GovernanceWriter(object):
+class GovernanceWriter(GovernanceListener):
     def __init__(self, service, nid: int, owner):
+        super().__init__()
+
         self._icon_service = service
         self._owner = owner
         self._nid = nid
 
-    def _call(self, method: str, params: dict, step_limit: int = 0x10000000) -> bytes:
+    def _call(self, method: str, params: dict, step_limit: int = 0x10000000) -> str:
         tx_handler = self._create_tx_handler()
         return tx_handler.invoke(
             owner=self._owner,
@@ -165,17 +167,21 @@ class GovernanceWriter(object):
         )
 
     def _create_tx_handler(self) -> TxHandler:
-        return TxHandler(self._icon_service, self._nid)
+        return TxHandler(self._icon_service, self._nid, self.on_send_request)
 
     def update(self, score_path: str) -> str:
         """Update governance SCORE
 
         :return: tx_hash
         """
+        path: str = os.path.join(score_path, "package.json")
+        if not os.path.isfile(path):
+            raise Exception(f"Invalid score path: {score_path}")
+
         content: bytes = gen_deploy_data_content(score_path)
 
-        tx_handler = TxHandler(self._icon_service, self._nid)
-        ret = tx_handler.update(self._owner, GOVERNANCE_ADDRESS, content, limit=0x70000000)
+        tx_handler = self._create_tx_handler()
+        ret = tx_handler.update(self._owner, GOVERNANCE_ADDRESS, content)
 
         return ret
 
@@ -236,7 +242,12 @@ def create_reader_by_args(args) -> GovernanceReader:
     url: str = args.url
     nid: int = args.nid
 
-    return create_reader(url, nid)
+    reader = create_reader(url, nid)
+
+    callback = functools.partial(_print_request, "Request")
+    reader.set_on_send_request(callback)
+
+    return reader
 
 
 def create_reader(url: str, nid: int) -> GovernanceReader:
@@ -249,21 +260,36 @@ def create_writer_by_args(args) -> GovernanceWriter:
     nid: int = args.nid
     keystore_path: str = args.keystore
     password: str = args.password
+    yes: bool = args.yes
 
     if password is None:
         password = getpass.getpass("> Password: ")
 
-    return create_writer(url, nid, keystore_path, password)
+    writer = create_writer(url, nid, keystore_path, password)
+
+    callback = functools.partial(_confirm_callback, yes=yes)
+    writer.set_on_send_request(callback)
+
+    return writer
 
 
 def create_writer(url: str, nid: int, keystore_path: str, password: str) -> GovernanceWriter:
     icon_service = IconService(HTTPProvider(url))
 
     owner_wallet = KeyWallet.load(keystore_path, password)
-    print(f"ownerAddress: {owner_wallet.get_address()}")
-
     return GovernanceWriter(icon_service, nid, owner_wallet)
 
 
 def create_icon_service(url: str) -> IconService:
     return IconService(HTTPProvider(url))
+
+
+def _confirm_callback(content: dict, yes: bool) -> bool:
+    _print_request("Request", content)
+
+    if not yes:
+        ret: str = input("> Continue? [Y/n]")
+        if ret == "n":
+            return False
+
+    return True

@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pprint
-
 from .governance import create_reader_by_args
+from .utils import print_tx_result
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -43,6 +42,6 @@ def _get_tx_result(args) -> int:
 
     reader = create_reader_by_args(args)
     tx_result: dict = reader.get_tx_result(tx_hash)
-    pprint.pprint(tx_result)
+    print_tx_result(tx_result)
 
     return 0

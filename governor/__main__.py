@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import argparse
-import pprint
+import json
 import sys
 import time
 from typing import Optional
@@ -24,8 +24,9 @@ from . import revision_command
 from . import score_command
 from . import step_command
 from . import txresult_command
-from .constants import DEFAULT_URL, DEFAULT_NID
+from .constants import DEFAULT_URL, DEFAULT_NID, COLUMN
 from .governance import create_icon_service
+from .utils import print_title, print_tx_result, print_response
 
 
 def main() -> int:
@@ -53,35 +54,28 @@ def main() -> int:
     args = parser.parse_args()
     _print_arguments(args)
 
-    ret = _prompt_continue(args)
-    if ret == 0:
-        ret: Optional[int, str] = args.func(args)
-        if isinstance(ret, str):
-            if not args.no_result:
-                ret = _print_tx_result(args, tx_hash=ret)
-            else:
-                print(f"txresult: {ret}")
-                ret = 0
+    ret: Optional[int, str] = args.func(args)
+    if isinstance(ret, str):
+        print_response(ret)
+
+        if not args.no_result:
+            ret = _print_tx_result(args, tx_hash=ret)
+        else:
+            ret = 0
 
         return ret
 
 
 def _print_arguments(args):
-    print("Arguments ======================")
+    print_title("Arguments", COLUMN)
 
+    arguments = {}
     for name, value in args._get_kwargs():
-        print(f"* {name}: {value}")
+        if name == "func":
+            value = value.__name__
+        arguments[name] = value
 
-    print("================================")
-
-
-def _prompt_continue(args) -> int:
-    if hasattr(args, "yes") and not args.yes:
-        ret = input("Continue? [Y/n]")
-        if ret in ("n", "N"):
-            return 1
-
-    return 0
+    print(f"{json.dumps(arguments, indent=4)}\n")
 
 
 def _print_tx_result(args, tx_hash: str) -> int:
@@ -89,12 +83,14 @@ def _print_tx_result(args, tx_hash: str) -> int:
         time.sleep(2)
         icon_service = create_icon_service(args.url)
         tx_result: dict = icon_service.get_transaction_result(tx_hash)
-        pprint.pprint(tx_result)
+        print_tx_result(tx_result)
         ret = tx_result["status"]
     else:
         # tx_hash is not tx hash format
         print(tx_hash)
         ret = 1
+
+    print("")
 
     return ret
 
@@ -149,7 +145,7 @@ def create_invoke_parser() -> argparse.ArgumentParser:
         "--no-result",
         action="store_true",
         required=False,
-        help="Display transaction result automatically for invoke commands"
+        help="Display transaction result automatically after invoking is done"
     )
     parent_parser.add_argument(
         "--yes", "-y",

@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pprint
-
 from .governance import create_writer_by_args, create_reader_by_args
+from .utils import print_response
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -73,8 +72,9 @@ def _init_for_get_revision(sub_parser, common_parent_parser):
 
 def _get_revision(args) -> int:
     reader = create_reader_by_args(args)
-    revision = reader.get_revision()
-    pprint.pprint(revision)
+    revision: dict = reader.get_revision()
+
+    print_response(revision)
 
     return 0
 

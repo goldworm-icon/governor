@@ -16,7 +16,9 @@
 
 import pprint
 
+
 from .governance import create_writer_by_args, create_reader_by_args
+from .utils import print_response
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -70,7 +72,7 @@ def _init_for_get_score_status(sub_parser, common_parent_parser):
         help="SCORE address ex) cx8a96c0dcf0567635309809d391908c32fbca5317"
     )
 
-    score_parser.set_defaults(func=_get_service_config)
+    score_parser.set_defaults(func=_get_score_status)
 
 
 def _get_score_status(args) -> int:
@@ -78,7 +80,7 @@ def _get_score_status(args) -> int:
 
     reader = create_reader_by_args(args)
     result: dict = reader.get_score_status(address)
-    pprint.pprint(result)
+    print_response(result)
 
     return 0
 
@@ -98,7 +100,7 @@ def _init_for_get_service_config(sub_parser, common_parent_parser):
 def _get_service_config(args) -> int:
     reader = create_reader_by_args(args)
     result: dict = reader.get_service_config()
-    pprint.pprint(result)
+    print_response(result)
 
     return 0
 
