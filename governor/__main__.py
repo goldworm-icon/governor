@@ -38,7 +38,7 @@ def main() -> int:
     ]
 
     parser = argparse.ArgumentParser(
-        prog="governor", description="Governor SCORE controller")
+        prog="governor", description="Governance SCORE controller")
     sub_parser = parser.add_subparsers(title="subcommands")
 
     common_parent_parser = create_common_parser()
