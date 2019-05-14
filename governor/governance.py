@@ -205,7 +205,7 @@ class GovernanceWriter(GovernanceListener):
         :return:
         """
         method = "setRevision"
-        params = {"revision": revision, "name": name}
+        params = {"code": revision, "name": name}
 
         return self._call(method, params)
 
