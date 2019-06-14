@@ -147,6 +147,22 @@ class GovernanceReader(GovernanceListener):
         tx_result = self._icon_service.get_transaction_result(tx_hash)
         return tx_result
 
+    def get_max_step_limit(self, context_type: str) -> int:
+        params = {"contextType": context_type}
+        return self._call("getMaxStepLimit", params)
+
+    def is_deployer(self, address: str) -> int:
+        params = {"address": address}
+        return self._call("isDeployer", params)
+
+    def is_in_score_black_list(self, address: str) -> int:
+        params = {"address": address}
+        return self._call("isInScoreBlackList", params)
+
+    def is_in_import_white_list(self, import_stmt: str) -> int:
+        params = {"importStmt": import_stmt}
+        return self._call("isInImportWhiteList", params)
+
 
 class GovernanceWriter(GovernanceListener):
     def __init__(self, service, nid: int, owner):
@@ -197,6 +213,18 @@ class GovernanceWriter(GovernanceListener):
 
         return self._call(method, params)
 
+    def add_auditor(self, address: str) -> str:
+        method = "addAuditor"
+        params = {"address": address}
+
+        return self._call(method, params)
+
+    def remove_auditor(self, address: str) -> str:
+        method = "removeAuditor"
+        params = {"address": address}
+
+        return self._call(method, params)
+
     def set_revision(self, revision: int, name: str) -> str:
         """Set revision to governance SCORE
 
@@ -206,6 +234,13 @@ class GovernanceWriter(GovernanceListener):
         """
         method = "setRevision"
         params = {"code": revision, "name": name}
+
+        return self._call(method, params)
+
+    def set_step_price(self, step_price: int) -> str:
+
+        method = "setStepPrice"
+        params = {"stepPrice": step_price}
 
         return self._call(method, params)
 
@@ -230,6 +265,67 @@ class GovernanceWriter(GovernanceListener):
             "stepType": step_type,
             "cost": cost
         }
+
+        return self._call(method, params)
+
+    def set_max_step_limit(self, context_type: str, value: int) -> str:
+
+        context_types = ("invoke", "query")
+
+        if context_type not in context_types:
+            raise ValueError(f"Invalid contextType: {context_type}")
+
+        method = "setMaxStepLimit"
+        params = {"contextType": context_type, "value": value}
+
+        return self._call(method, params)
+
+    def add_deployer(self, address: str) -> str:
+
+        method = "addDeployer"
+        params = {"address": address}
+
+        return self._call(method, params)
+
+    def remove_deployer(self, address: str) -> str:
+
+        method = "removeDeployer"
+        params = {"address": address}
+
+        return self._call(method, params)
+
+    def add_to_score_black_list(self, address: str) -> str:
+
+        method = "addToScoreBlackList"
+        params = {"address": address}
+
+        return self._call(method, params)
+
+    def remove_from_score_black_list(self, address: str) -> str:
+
+        method = "removeFromScoreBlackList"
+        params = {"address": address}
+
+        return self._call(method, params)
+
+    def add_import_white_list(self, import_stmt: str) -> str:
+
+        method = "addImportWhiteList"
+        params = {"importStmt": import_stmt}
+
+        return self._call(method, params)
+
+    def remove_import_white_list(self, import_stmt: str) -> str:
+
+        method = "removeImportWhiteList"
+        params = {"importStmt": import_stmt}
+
+        return self._call(method, params)
+
+    def update_service_config(self, service_flag: int):
+
+        method = "updateServiceConfig"
+        params = {"serviceFlag": service_flag}
 
         return self._call(method, params)
 

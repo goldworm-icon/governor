@@ -16,7 +16,6 @@
 
 import pprint
 
-
 from .governance import create_writer_by_args, create_reader_by_args
 from .utils import print_response
 
@@ -26,8 +25,25 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
     _init_for_accept_score(sub_parser, common_parent_parser, invoke_parent_parser)
     _init_for_reject_score(sub_parser, common_parent_parser, invoke_parent_parser)
 
+    _init_for_add_auditor(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_remove_auditor(sub_parser, common_parent_parser, invoke_parent_parser)
+
+    _init_for_add_deployer(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_remove_deployer(sub_parser, common_parent_parser, invoke_parent_parser)
+
+    _init_for_add_to_score_black_list(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_remove_from_score_black_list(sub_parser, common_parent_parser, invoke_parent_parser)
+
+    _init_for_add_import_white_list(sub_parser, common_parent_parser, invoke_parent_parser)
+    _init_for_remove_import_white_list(sub_parser, common_parent_parser, invoke_parent_parser)
+
     _init_for_get_score_status(sub_parser, common_parent_parser)
     _init_for_get_service_config(sub_parser, common_parent_parser)
+    _init_for_update_service_config(sub_parser, common_parent_parser, invoke_parent_parser)
+
+    _init_for_is_deployer(sub_parser, common_parent_parser)
+    _init_for_is_in_score_black_list(sub_parser, common_parent_parser)
+    _init_for_is_in_import_white_list(sub_parser, common_parent_parser)
 
 
 def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -105,6 +121,32 @@ def _get_service_config(args) -> int:
     return 0
 
 
+def _init_for_update_service_config(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "updateServiceConfig"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "service_flag",
+        type=int,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_update_service_config)
+
+
+def _update_service_config(args):
+    service_flag: int = args.service_flag
+
+    writer = create_writer_by_args(args)
+    return writer.update_service_config(service_flag)
+
+
 def _init_for_accept_score(sub_parser, common_parent_parser, invoke_parent_parser):
     name = "acceptScore"
     desc = f"{name} command"
@@ -163,3 +205,305 @@ def _reject_score(args) -> str:
 
     writer = create_writer_by_args(args)
     return writer.reject_score(tx_hash, reason)
+
+
+def _init_for_add_auditor(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "addAuditor"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_add_auditor)
+
+
+def _add_auditor(args) -> str:
+    address: str = args.address
+
+    writer = create_writer_by_args(args)
+    return writer.add_auditor(address)
+
+
+def _init_for_remove_auditor(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "removeAuditor"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_remove_auditor)
+
+
+def _remove_auditor(args) -> str:
+    address: str = args.address
+
+    writer = create_writer_by_args(args)
+    return writer.remove_auditor(address)
+
+
+def _init_for_add_deployer(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "addDeployer"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_add_deployer)
+
+
+def _add_deployer(args) -> str:
+    address: str = args.address
+
+    writer = create_writer_by_args(args)
+    return writer.add_deployer(address)
+
+
+def _init_for_remove_deployer(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "removeDeployer"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_remove_deployer)
+
+
+def _remove_deployer(args) -> str:
+    address: str = args.address
+
+    writer = create_writer_by_args(args)
+    return writer.remove_deployer(address)
+
+
+def _init_for_add_to_score_black_list(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "addToScoreBlackList"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_add_to_score_black_list)
+
+
+def _add_to_score_black_list(args) -> str:
+    address: str = args.address
+
+    writer = create_writer_by_args(args)
+    return writer.add_to_score_black_list(address)
+
+
+def _init_for_remove_from_score_black_list(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "removeFromScoreBlackList"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_remove_from_score_black_list)
+
+
+def _remove_from_score_black_list(args) -> str:
+    address: str = args.address
+
+    writer = create_writer_by_args(args)
+    return writer.remove_from_score_black_list(address)
+
+
+def _init_for_add_import_white_list(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "addImportWhiteList"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "import_stmt",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_add_import_white_list)
+
+
+def _add_import_white_list(args) -> str:
+    import_stmt: str = args.import_stmt
+
+    writer = create_writer_by_args(args)
+    return writer.add_import_white_list(import_stmt)
+
+
+def _init_for_remove_import_white_list(sub_parser, common_parent_parser, invoke_parent_parser):
+    name = "removeImportWhiteList"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser, invoke_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "import_stmt",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_remove_import_white_list)
+
+
+def _remove_import_white_list(args) -> str:
+    import_stmt: str = args.import_stmt
+
+    writer = create_writer_by_args(args)
+    return writer.remove_import_white_list(import_stmt)
+
+
+def _init_for_is_deployer(sub_parser, common_parent_parser):
+    name = "isDeployer"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_is_deployer)
+
+
+def _is_deployer(args) -> int:
+    address: str = args.address
+
+    reader = create_reader_by_args(args)
+    is_deployer: str = reader.is_deployer(address)
+    is_deployer = int(is_deployer, 16)
+
+    print_response(is_deployer)
+
+    return 0
+
+
+def _init_for_is_in_score_black_list(sub_parser, common_parent_parser):
+    name = "isInScoreBlackList"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_is_in_score_black_list)
+
+
+def _is_in_score_black_list(args) -> int:
+    address: str = args.address
+
+    reader = create_reader_by_args(args)
+    is_in_score_black_list: str = reader.is_in_score_black_list(address)
+    is_in_score_black_list = int(is_in_score_black_list, 16)
+
+    print_response(is_in_score_black_list)
+
+    return 0
+
+
+def _init_for_is_in_import_white_list(sub_parser, common_parent_parser):
+    name = "isInImportWhiteList"
+    desc = f"{name} command"
+
+    # todo: governor 입력시 isImportWhiteList 줄바꿈 현상 확인
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.add_argument(
+        "import_stmt",
+        type=str,
+        nargs="?",
+        help=""
+    )
+
+    score_parser.set_defaults(func=_is_in_import_white_list)
+
+
+def _is_in_import_white_list(args) -> int:
+    import_stmt: str = args.import_stmt
+
+    reader = create_reader_by_args(args)
+    is_in_import_white_list: str = reader.is_in_import_white_list(import_stmt)
+    is_in_import_white_list = int(is_in_import_white_list, 16)
+
+    print_response(is_in_import_white_list)
+
+    return 0

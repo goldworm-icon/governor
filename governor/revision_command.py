@@ -21,6 +21,7 @@ from .utils import print_response
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
     _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parser)
     _init_for_get_revision(sub_parser, common_parent_parser)
+    _init_for_get_version(sub_parser, common_parent_parser)
 
 
 def _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -78,3 +79,23 @@ def _get_revision(args) -> int:
 
     return 0
 
+
+def _init_for_get_version(sub_parser, common_parent_parser):
+    name = "getVersion"
+    desc = f"{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name,
+        parents=[common_parent_parser],
+        help=desc)
+
+    score_parser.set_defaults(func=_get_version)
+
+
+def _get_version(args) -> int:
+    reader = create_reader_by_args(args)
+    version: int = reader.get_version()
+
+    print_response(version)
+
+    return 0
