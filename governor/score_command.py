@@ -481,7 +481,6 @@ def _init_for_is_in_import_white_list(sub_parser, common_parent_parser):
     name = "isInImportWhiteList"
     desc = f"{name} command"
 
-    # todo: governor 입력시 isImportWhiteList 줄바꿈 현상 확인
     score_parser = sub_parser.add_parser(
         name,
         parents=[common_parent_parser],
