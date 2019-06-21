@@ -37,8 +37,13 @@ def main() -> int:
         txresult_command.init
     ]
 
+    def formatter(prog):
+        return argparse.HelpFormatter(prog, max_help_position=30)
+
+    formatter
     parser = argparse.ArgumentParser(
-        prog="governor", description="Governance SCORE controller")
+        prog="governor", description="Governance SCORE controller",
+        formatter_class=formatter)
     sub_parser = parser.add_subparsers(title="subcommands")
 
     common_parent_parser = create_common_parser()
