@@ -25,7 +25,7 @@ from iconsdk.signed_transaction import SignedTransaction
 from iconsdk.wallet.wallet import KeyWallet
 
 from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS, COLUMN
-from .utils import print_title, print_dict
+from .utils import print_title, print_dict, get_url
 
 
 def _print_request(title: str, content: dict):
@@ -335,7 +335,7 @@ class GovernanceWriter(GovernanceListener):
 
 
 def create_reader_by_args(args) -> GovernanceReader:
-    url: str = args.url
+    url: str = get_url(args.url)
     nid: int = args.nid
 
     reader = create_reader(url, nid)
@@ -347,12 +347,13 @@ def create_reader_by_args(args) -> GovernanceReader:
 
 
 def create_reader(url: str, nid: int) -> GovernanceReader:
+    url: str = get_url(url)
     icon_service = IconService(HTTPProvider(url))
     return GovernanceReader(icon_service, nid)
 
 
 def create_writer_by_args(args) -> GovernanceWriter:
-    url: str = args.url
+    url: str = get_url(args.url)
     nid: int = args.nid
     keystore_path: str = args.keystore
     password: str = args.password
@@ -370,6 +371,7 @@ def create_writer_by_args(args) -> GovernanceWriter:
 
 
 def create_writer(url: str, nid: int, keystore_path: str, password: str) -> GovernanceWriter:
+    url: str = get_url(url)
     icon_service = IconService(HTTPProvider(url))
 
     owner_wallet = KeyWallet.load(keystore_path, password)
@@ -377,6 +379,7 @@ def create_writer(url: str, nid: int, keystore_path: str, password: str) -> Gove
 
 
 def create_icon_service(url: str) -> IconService:
+    url: str = get_url(url)
     return IconService(HTTPProvider(url))
 
 

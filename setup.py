@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="governor",
-    version="0.0.1",
+    version="0.0.2",
     author="goldworm",
     author_email="goldworm@iconloop.com",
     description="Governor SCORE handler",

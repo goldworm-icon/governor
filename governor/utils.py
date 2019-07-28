@@ -15,9 +15,13 @@
 # limitations under the License.
 
 import json
-from typing import Union
+from typing import TYPE_CHECKING, Union, Optional
+from urllib.parse import urlparse
 
-from .constants import COLUMN
+from .constants import COLUMN, PREDEFINED_URLS
+
+if TYPE_CHECKING:
+    from urllib.parse import ParseResult
 
 
 def hex_to_bytes(tx_hash: str) -> bytes:
@@ -56,3 +60,27 @@ def print_response(content: Union[str, dict]):
 def print_tx_result(tx_result: dict):
     print_title("Transaction Result")
     print_dict(tx_result)
+
+
+def is_url_valid(url: str) -> bool:
+    ps: 'ParseResult' = urlparse(url)
+
+    return ps.scheme in ("http", "https") \
+        and len(ps.netloc) > 0 \
+        and len(ps.path) > 0
+
+
+def get_predefined_url(name: str) -> Optional[str]:
+    return PREDEFINED_URLS.get(name)
+
+
+def get_url(url: str) -> str:
+    predefined_url: str = get_predefined_url(url)
+
+    if isinstance(predefined_url, str):
+        return predefined_url
+
+    if not is_url_valid(url):
+        raise ValueError(f"Invalid url: {url}")
+
+    return url

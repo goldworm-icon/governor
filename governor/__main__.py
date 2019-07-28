@@ -20,13 +20,14 @@ import sys
 import time
 from typing import Optional
 
+from governor.constants import PREDEFINED_URLS
 from . import revision_command
 from . import score_command
 from . import step_command
 from . import txresult_command
 from .constants import DEFAULT_URL, DEFAULT_NID, COLUMN
 from .governance import create_icon_service
-from .utils import print_title, print_tx_result, print_response
+from .utils import print_title, print_tx_result, print_response, get_url
 
 
 def main() -> int:
@@ -38,7 +39,10 @@ def main() -> int:
     ]
 
     parser = argparse.ArgumentParser(
-        prog="governor", description="Governance SCORE controller")
+        prog="governor",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="Governance SCORE controller",
+        epilog=_get_epilog())
     sub_parser = parser.add_subparsers(title="subcommands")
 
     common_parent_parser = create_common_parser()
@@ -73,6 +77,8 @@ def _print_arguments(args):
     for name, value in args._get_kwargs():
         if name == "func":
             value = value.__name__
+        elif name == "url":
+            value = get_url(value)
         arguments[name] = value
 
     print(f"{json.dumps(arguments, indent=4)}\n")
@@ -93,6 +99,15 @@ def _print_tx_result(args, tx_hash: str) -> int:
     print("")
 
     return ret
+
+
+def _get_epilog() -> str:
+    words = ["predefined urls:"]
+
+    for key, value in PREDEFINED_URLS.items():
+        words.append(f"    {key}: {value}")
+
+    return "\n".join(words)
 
 
 def create_common_parser() -> argparse.ArgumentParser:
