@@ -67,7 +67,7 @@ class TxHandler:
     def install(self, owner, content, params=None, limit=0x50000000):
         return self._deploy(owner, ZERO_ADDRESS, content, params, limit)
 
-    def update(self, owner, to, content, params=None, limit=0x70000000):
+    def update(self, owner, to, content, params=None, limit=0x80000000):
         return self._deploy(owner, to, content, params, limit)
 
     def invoke(self, owner, to, method, params, limit=0x10000000):
