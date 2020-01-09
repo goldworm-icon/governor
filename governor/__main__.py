@@ -85,18 +85,29 @@ def _print_arguments(args):
 
 
 def _print_tx_result(args, tx_hash: str) -> int:
-    if tx_hash.startswith("0x") and len(tx_hash) == 66:
-        time.sleep(2)
-        icon_service = create_icon_service(args.url)
-        tx_result: dict = icon_service.get_transaction_result(tx_hash)
-        print_tx_result(tx_result)
-        ret = tx_result["status"]
-    else:
-        # tx_hash is not tx hash format
-        print(tx_hash)
-        ret = 1
+    ret = 1
 
-    print("")
+    if not (tx_hash.startswith("0x") and len(tx_hash) == 66):
+        print(tx_hash)
+        return ret
+
+    # Waite to finish the requested transaction on blockchain
+    time.sleep(3)
+
+    icon_service = create_icon_service(args.url)
+    repeat = 3
+
+    for i in range(repeat):
+        try:
+            tx_result: dict = icon_service.get_transaction_result(tx_hash)
+            print_tx_result(tx_result)
+            break
+        except:
+            if i + 1 == repeat:
+                print(f"Failed to get the transaction result: {tx_hash}")
+            else:
+                print(f"Retrying {i + 2}/{repeat} after 2 seconds...")
+                time.sleep(2)
 
     return ret
 
