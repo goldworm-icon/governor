@@ -16,24 +16,24 @@
 import os
 import unittest
 
-from governor import __version__
+from governor import __about__
 
 
-class TestVersion(unittest.TestCase):
-    def test_version(self):
+class TestAbout(unittest.TestCase):
+    def test_about(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        path = os.path.join(here, "../governor/__version__.py")
+        path = os.path.join(here, "../governor/__about__.py")
 
         about = {}
         with open(path, "r") as f:
             exec(f.read(), about)
 
         expected = {
-            "__title__": __version__.__title__,
-            "__version__": __version__.__version__,
-            "__author__": __version__.__author__,
-            "__author_email__": __version__.__author_email__,
-            "__url__": __version__.__url__
+            "name": __about__.name,
+            "description": __about__.description,
+            "author": __about__.author,
+            "author_email": __about__.author_email,
+            "url": __about__.url
         }
 
         for key in expected:

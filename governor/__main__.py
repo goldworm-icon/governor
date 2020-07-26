@@ -29,6 +29,7 @@ from . import txresult_command
 from .constants import DEFAULT_URL, DEFAULT_NID, COLUMN
 from .governance import create_icon_service
 from .utils import print_title, print_tx_result, print_response, get_url
+from . import __about__
 
 
 def main() -> int:
@@ -40,9 +41,9 @@ def main() -> int:
     ]
 
     parser = argparse.ArgumentParser(
-        prog="governor",
+        prog=__about__.name,
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="Governance SCORE controller",
+        description=__about__.description,
         epilog=_get_epilog())
     sub_parser = parser.add_subparsers(title="subcommands")
 
