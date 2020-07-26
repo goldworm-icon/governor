@@ -14,16 +14,21 @@
 
 import functools
 import getpass
+import logging
 import os.path
+from urllib.parse import urlparse
 
 from iconsdk.builder.call_builder import CallBuilder
-from iconsdk.builder.transaction_builder import DeployTransactionBuilder, CallTransactionBuilder
+from iconsdk.builder.transaction_builder import (
+    DeployTransactionBuilder,
+    CallTransactionBuilder,
+    Transaction,
+)
 from iconsdk.icon_service import IconService
 from iconsdk.libs.in_memory_zip import gen_deploy_data_content
 from iconsdk.providers.http_provider import HTTPProvider
 from iconsdk.signed_transaction import SignedTransaction
 from iconsdk.wallet.wallet import KeyWallet
-
 from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS, COLUMN
 from .utils import print_title, print_dict, get_url
 
@@ -34,17 +39,18 @@ def _print_request(title: str, content: dict):
     print("")
 
 
-class TxHandler:
-    def __init__(self, service, nid: int, on_send_request: callable(dict)):
+class TxBuildHelper:
+    def __init__(self, service, nid: int):
         self._icon_service = service
         self._nid = nid
-        self._on_send_request = on_send_request
 
-    def _deploy(self, owner, to, content, params, limit):
+    def _deploy(self, owner, to, content, params, step_limit) -> Transaction:
+        logging.debug("TxBuildHelper._deploy() start")
+
         transaction = DeployTransactionBuilder() \
             .from_(owner.get_address()) \
             .to(to) \
-            .step_limit(limit) \
+            .step_limit(step_limit) \
             .version(3) \
             .nid(self._nid) \
             .content_type("application/zip") \
@@ -52,11 +58,36 @@ class TxHandler:
             .params(params) \
             .build()
 
-        ret = self._call_on_send_request(transaction.to_dict())
-        if not ret:
-            return
+        logging.debug("TxBuildHelper._deploy() end")
+        return transaction
 
-        return self._icon_service.send_transaction(SignedTransaction(transaction, owner))
+    def install(self, owner, content, params=None, step_limit=0x50000000) -> Transaction:
+        return self._deploy(owner, ZERO_ADDRESS, content, params, step_limit)
+
+    def update(self, owner, to, content, params=None, step_limit=0x80000000) -> Transaction:
+        logging.debug("TxBuilderHelper.update() start")
+        transaction = self._deploy(owner, to, content, params, step_limit)
+        logging.debug("TxBuilderHelper.update() end")
+
+        return transaction
+
+    def invoke(self, owner, to, method, params, step_limit=0x10000000):
+        return CallTransactionBuilder() \
+            .from_(owner.get_address()) \
+            .to(to) \
+            .step_limit(step_limit) \
+            .nid(self._nid) \
+            .method(method) \
+            .params(params) \
+            .build()
+
+
+class TxHandler:
+    def __init__(self, service, nid: int, on_send_request: callable(dict)):
+        self._icon_service = service
+        self._nid = nid
+        self._on_send_request = on_send_request
+        self._tx_build_helper = TxBuildHelper(service, nid)
 
     def _call_on_send_request(self, content: dict) -> bool:
         if self._on_send_request:
@@ -64,25 +95,46 @@ class TxHandler:
 
         return False
 
-    def install(self, owner, content, params=None, limit=0x50000000):
-        return self._deploy(owner, ZERO_ADDRESS, content, params, limit)
+    def install(self, owner, content, params=None, step_limit=0x50000000, estimate: bool = False):
 
-    def update(self, owner, to, content, params=None, limit=0x80000000):
-        return self._deploy(owner, to, content, params, limit)
+        transaction = self._tx_build_helper.install(owner, content, params, step_limit)
+        return self._run(transaction, owner, estimate)
 
-    def invoke(self, owner, to, method, params, limit=0x10000000):
-        transaction = CallTransactionBuilder() \
-            .from_(owner.get_address()) \
-            .to(to) \
-            .step_limit(limit) \
-            .nid(self._nid) \
-            .method(method) \
-            .params(params) \
-            .build()
+    def update(self, owner, to, content, params=None, step_limit=0x70000000, estimate: bool = False):
+        transaction = self._tx_build_helper.update(owner, to, content, params, step_limit)
+        return self._run(transaction, owner, estimate)
 
-        self._call_on_send_request(transaction.to_dict())
+    def invoke(self, owner, to, method, params, step_limit=0x10000000, estimate: bool = False):
+        transaction = self._tx_build_helper.invoke(owner, to, method, params, step_limit)
+        return self._run(transaction, owner, estimate)
 
-        return self._icon_service.send_transaction(SignedTransaction(transaction, owner))
+    def _run(self, transaction: Transaction, owner: KeyWallet, estimate: bool):
+        logging.debug("TxHandler._run() start")
+
+        if estimate:
+            ret = self._estimate_step(transaction)
+        else:
+            ret = self._send_transaction(owner, transaction)
+
+        logging.debug("TxHandler._run() end")
+        return ret
+
+    def _send_transaction(self, owner: KeyWallet, transaction: Transaction):
+        logging.debug("TxHandler._send_transaction() start")
+
+        ret = self._call_on_send_request(transaction.to_dict())
+        if ret:
+            ret = self._icon_service.send_transaction(SignedTransaction(transaction, owner))
+
+        logging.debug("TxHandler._send_transaction() end")
+        return ret
+
+    def _estimate_step(self, transaction: Transaction) -> int:
+        logging.debug("TxHandler._estimate_step() start")
+        ret = self._icon_service.estimate_step(transaction)
+        logging.debug("TxHandler._estimate_step() end")
+
+        return ret
 
 
 class GovernanceListener(object):
@@ -177,7 +229,7 @@ class GovernanceWriter(GovernanceListener):
         return tx_handler.invoke(
             owner=self._owner,
             to=GOVERNANCE_ADDRESS,
-            limit=step_limit,
+            step_limit=step_limit,
             method=method,
             params=params
         )
@@ -185,7 +237,7 @@ class GovernanceWriter(GovernanceListener):
     def _create_tx_handler(self) -> TxHandler:
         return TxHandler(self._icon_service, self._nid, self.on_send_request)
 
-    def update(self, score_path: str) -> str:
+    def update(self, score_path: str, estimate: bool) -> str:
         """Update governance SCORE
 
         :return: tx_hash
@@ -197,7 +249,7 @@ class GovernanceWriter(GovernanceListener):
         content: bytes = gen_deploy_data_content(score_path)
 
         tx_handler = self._create_tx_handler()
-        ret = tx_handler.update(self._owner, GOVERNANCE_ADDRESS, content)
+        ret = tx_handler.update(self._owner, GOVERNANCE_ADDRESS, content, estimate=estimate)
 
         return ret
 
@@ -347,8 +399,7 @@ def create_reader_by_args(args) -> GovernanceReader:
 
 
 def create_reader(url: str, nid: int) -> GovernanceReader:
-    url: str = get_url(url)
-    icon_service = IconService(HTTPProvider(url))
+    icon_service = create_icon_service(url)
     return GovernanceReader(icon_service, nid)
 
 
@@ -371,8 +422,7 @@ def create_writer_by_args(args) -> GovernanceWriter:
 
 
 def create_writer(url: str, nid: int, keystore_path: str, password: str) -> GovernanceWriter:
-    url: str = get_url(url)
-    icon_service = IconService(HTTPProvider(url))
+    icon_service = create_icon_service(url)
 
     owner_wallet = KeyWallet.load(keystore_path, password)
     return GovernanceWriter(icon_service, nid, owner_wallet)
@@ -380,7 +430,9 @@ def create_writer(url: str, nid: int, keystore_path: str, password: str) -> Gove
 
 def create_icon_service(url: str) -> IconService:
     url: str = get_url(url)
-    return IconService(HTTPProvider(url))
+    o = urlparse(url)
+
+    return IconService(HTTPProvider(f"{o.scheme}://{o.netloc}", 3))
 
 
 def _confirm_callback(content: dict, yes: bool) -> bool:

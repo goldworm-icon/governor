@@ -16,6 +16,7 @@
 
 import argparse
 import json
+import logging
 import sys
 import time
 from typing import Optional
@@ -58,6 +59,8 @@ def main() -> int:
     args = parser.parse_args()
     _print_arguments(args)
 
+    _init_logger(args)
+
     ret: Optional[int, str] = args.func(args)
     if isinstance(ret, str):
         print_response(ret)
@@ -67,7 +70,27 @@ def main() -> int:
         else:
             ret = 0
 
-        return ret
+    return ret
+
+
+def _init_logger(args):
+    if not hasattr(args, "log"):
+        return
+
+    log_level = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warn": logging.WARN,
+        "warning": logging.WARNING,
+        "error": logging.ERROR,
+        "fatal": logging.FATAL,
+        "critical": logging.CRITICAL,
+    }
+
+    logging.basicConfig(
+        filename="governor.log",
+        level=log_level.get(args.log, logging.DEBUG)
+    )
 
 
 def _print_arguments(args):
@@ -141,6 +164,15 @@ def create_common_parser() -> argparse.ArgumentParser:
         "--verbose", "-v",
         required=False,
         action="store_true"
+    )
+    parent_parser.add_argument(
+        "--log",
+        type=str,
+        required=False,
+        help=(
+            "Write logging messages to 'governor.log' with a given level\n"
+            "ex) debug, info, warn, error, fatal"
+        )
     )
 
     return parent_parser

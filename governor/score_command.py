@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pprint
+from typing import Union
 
 from .governance import create_writer_by_args, create_reader_by_args
 from .utils import print_response
@@ -61,15 +61,28 @@ def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
         nargs="?",
         help="path where governance SCORE is located\nex) ./governance"
     )
+    score_parser.add_argument(
+        "--estimate",
+        action="store_true",
+        default=False,
+        required=False,
+        help="estimate step"
+    )
 
     score_parser.set_defaults(func=_update_governance_score)
 
 
-def _update_governance_score(args) -> str:
+def _update_governance_score(args) -> Union[int, str]:
     score_path: str = args.score_path
+    estimate: bool = args.estimate
 
     writer = create_writer_by_args(args)
-    return writer.update(score_path)
+    ret = writer.update(score_path, estimate)
+
+    if estimate:
+        print(f"Estimate step: {ret}, {hex(ret)}")
+
+    return ret
 
 
 def _init_for_get_score_status(sub_parser, common_parent_parser):
