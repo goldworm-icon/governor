@@ -71,7 +71,15 @@ def is_url_valid(url: str) -> bool:
 
 
 def get_predefined_url(name: str) -> Optional[str]:
-    return PREDEFINED_URLS.get(name)
+    if name not in PREDEFINED_URLS:
+        return None
+
+    return PREDEFINED_URLS[name][0]
+
+
+def get_predefined_nid(name: str) -> int:
+    item = PREDEFINED_URLS.get(name)
+    return item[1] if item else -1
 
 
 def get_url(url: str) -> str:

@@ -25,8 +25,10 @@ DEFAULT_NID = 3
 COLUMN = 80
 
 PREDEFINED_URLS = {
-    "mainnet": "https://ctz.solidwallet.io/api/v3",
-    "testnet": "https://test-ctz.solidwallet.io/api/v3",
-    "bicon": "https://bicon.net.solidwallet.io/api/v3",
-    "localhost": DEFAULT_URL
+    "mainnet": ("https://ctz.solidwallet.io/api/v3", 1),
+    "testnet": ("https://test-ctz.solidwallet.io/api/v3", 2),
+    "bicon": ("https://bicon.net.solidwallet.io/api/v3", 3),
+    "qanet": ("https://eunsoo.net.solidwallet.io/api/v3", 80),
+    "zicon": ("https://zicon.net.solidwallet.io/api/v3", 1),
+    "localnet": (DEFAULT_URL, DEFAULT_NID),
 }

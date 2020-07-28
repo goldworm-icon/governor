@@ -29,8 +29,9 @@ from iconsdk.libs.in_memory_zip import gen_deploy_data_content
 from iconsdk.providers.http_provider import HTTPProvider
 from iconsdk.signed_transaction import SignedTransaction
 from iconsdk.wallet.wallet import KeyWallet
+
 from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS, COLUMN
-from .utils import print_title, print_dict, get_url
+from .utils import print_title, print_dict, get_url, get_predefined_nid
 
 
 def _print_request(title: str, content: dict):
@@ -388,7 +389,7 @@ class GovernanceWriter(GovernanceListener):
 
 def create_reader_by_args(args) -> GovernanceReader:
     url: str = get_url(args.url)
-    nid: int = args.nid
+    nid: int = _get_nid(args)
 
     reader = create_reader(url, nid)
 
@@ -405,7 +406,7 @@ def create_reader(url: str, nid: int) -> GovernanceReader:
 
 def create_writer_by_args(args) -> GovernanceWriter:
     url: str = get_url(args.url)
-    nid: int = args.nid
+    nid: int = _get_nid(args)
     keystore_path: str = args.keystore
     password: str = args.password
     yes: bool = args.yes
@@ -429,9 +430,7 @@ def create_writer(url: str, nid: int, keystore_path: str, password: str) -> Gove
 
 
 def create_icon_service(url: str) -> IconService:
-    url: str = get_url(url)
     o = urlparse(url)
-
     return IconService(HTTPProvider(f"{o.scheme}://{o.netloc}", 3))
 
 
@@ -444,3 +443,14 @@ def _confirm_callback(content: dict, yes: bool) -> bool:
             return False
 
     return True
+
+
+def _get_nid(args) -> int:
+    nid: int = args.nid
+
+    if nid < 0:
+        nid = get_predefined_nid(args.url)
+        if nid < 0:
+            ValueError("nid is required")
+
+    return nid

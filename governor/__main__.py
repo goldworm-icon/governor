@@ -115,7 +115,7 @@ def _print_tx_result(args, tx_hash: str) -> int:
         print(tx_hash)
         return ret
 
-    # Waite to finish the requested transaction on blockchain
+    # Wait to finish the requested transaction on blockchain
     time.sleep(3)
 
     icon_service = create_icon_service(args.url)
@@ -140,7 +140,9 @@ def _get_epilog() -> str:
     words = ["predefined urls:"]
 
     for key, value in PREDEFINED_URLS.items():
-        words.append(f"    {key}: {value}")
+        url, nid = value
+        key = f"{key}({nid})"
+        words.append(f"{key:15s}: {url}")
 
     return "\n".join(words)
 
@@ -158,7 +160,7 @@ def create_common_parser() -> argparse.ArgumentParser:
         "--nid", "-n",
         type=int,
         required=False,
-        default=DEFAULT_NID,
+        default=-1,
         help=f"networkId default({DEFAULT_NID} ex) mainnet(1), testnet(2)"
     )
     parent_parser.add_argument(
