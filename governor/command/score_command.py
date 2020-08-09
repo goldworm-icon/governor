@@ -181,7 +181,7 @@ def _init_for_accept_score(sub_parser, common_parent_parser, invoke_parent_parse
     score_parser.set_defaults(func=_accept_score)
 
 
-def _accept_score(args) -> str:
+def _accept_score(args) -> bytes:
     tx_hash: str = args.tx_hash
 
     writer = create_writer_by_args(args)
@@ -210,7 +210,7 @@ def _init_for_reject_score(sub_parser, common_parent_parser, invoke_parent_parse
     score_parser.set_defaults(func=_reject_score)
 
 
-def _reject_score(args) -> str:
+def _reject_score(args) -> bytes:
     tx_hash: str = args.tx_hash
     reason: str = args.reason
 
@@ -231,7 +231,7 @@ def _init_for_add_auditor(sub_parser, common_parent_parser, invoke_parent_parser
     score_parser.set_defaults(func=_add_auditor)
 
 
-def _add_auditor(args) -> str:
+def _add_auditor(args) -> bytes:
     address: str = args.address
 
     writer = create_writer_by_args(args)
@@ -251,7 +251,7 @@ def _init_for_remove_auditor(sub_parser, common_parent_parser, invoke_parent_par
     score_parser.set_defaults(func=_remove_auditor)
 
 
-def _remove_auditor(args) -> str:
+def _remove_auditor(args) -> bytes:
     address: str = args.address
 
     writer = create_writer_by_args(args)
@@ -271,7 +271,7 @@ def _init_for_add_deployer(sub_parser, common_parent_parser, invoke_parent_parse
     score_parser.set_defaults(func=_add_deployer)
 
 
-def _add_deployer(args) -> str:
+def _add_deployer(args) -> bytes:
     address: str = args.address
 
     writer = create_writer_by_args(args)
@@ -291,7 +291,7 @@ def _init_for_remove_deployer(sub_parser, common_parent_parser, invoke_parent_pa
     score_parser.set_defaults(func=_remove_deployer)
 
 
-def _remove_deployer(args) -> str:
+def _remove_deployer(args) -> bytes:
     address: str = args.address
 
     writer = create_writer_by_args(args)
@@ -313,7 +313,7 @@ def _init_for_add_to_score_black_list(
     score_parser.set_defaults(func=_add_to_score_black_list)
 
 
-def _add_to_score_black_list(args) -> str:
+def _add_to_score_black_list(args) -> bytes:
     address: str = args.address
 
     writer = create_writer_by_args(args)
@@ -335,7 +335,7 @@ def _init_for_remove_from_score_black_list(
     score_parser.set_defaults(func=_remove_from_score_black_list)
 
 
-def _remove_from_score_black_list(args) -> str:
+def _remove_from_score_black_list(args) -> bytes:
     address: str = args.address
 
     writer = create_writer_by_args(args)
@@ -357,7 +357,7 @@ def _init_for_add_import_white_list(
     score_parser.set_defaults(func=_add_import_white_list)
 
 
-def _add_import_white_list(args) -> str:
+def _add_import_white_list(args) -> bytes:
     import_stmt: str = args.import_stmt
 
     writer = create_writer_by_args(args)
@@ -379,7 +379,7 @@ def _init_for_remove_import_white_list(
     score_parser.set_defaults(func=_remove_import_white_list)
 
 
-def _remove_import_white_list(args) -> str:
+def _remove_import_white_list(args) -> bytes:
     import_stmt: str = args.import_stmt
 
     writer = create_writer_by_args(args)
@@ -403,10 +403,8 @@ def _is_deployer(args) -> int:
     address: str = args.address
 
     reader = create_reader_by_args(args)
-    is_deployer: str = reader.is_deployer(address)
-    is_deployer = int(is_deployer, 16)
-
-    print_response(is_deployer)
+    is_deployer: bool = reader.is_deployer(address)
+    print(is_deployer)
 
     return 0
 
@@ -428,10 +426,8 @@ def _is_in_score_black_list(args) -> int:
     address: str = args.address
 
     reader = create_reader_by_args(args)
-    is_in_score_black_list: str = reader.is_in_score_black_list(address)
-    is_in_score_black_list = int(is_in_score_black_list, 16)
-
-    print_response(is_in_score_black_list)
+    is_in_score_black_list: bool = reader.is_in_score_black_list(address)
+    print(is_in_score_black_list)
 
     return 0
 
@@ -454,9 +450,7 @@ def _is_in_import_white_list(args) -> int:
     import_stmt: str = args.import_stmt
 
     reader = create_reader_by_args(args)
-    is_in_import_white_list: str = reader.is_in_import_white_list(import_stmt)
-    is_in_import_white_list = int(is_in_import_white_list, 16)
-
-    print_response(is_in_import_white_list)
+    is_in_import_white_list: bool = reader.is_in_import_white_list(import_stmt)
+    print(is_in_import_white_list)
 
     return 0

@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 
 from governor.governance import create_reader_by_args, create_writer_by_args
 from governor.utils import print_response
@@ -49,14 +48,12 @@ def _init_for_set_step_cost(sub_parser, common_parent_parser, invoke_parent_pars
     score_parser.set_defaults(func=_set_step_cost)
 
 
-def _set_step_cost(args) -> str:
+def _set_step_cost(args) -> bytes:
     step_type: str = args.step_type
     cost: int = args.cost
 
     writer = create_writer_by_args(args)
-    tx_result: Optional[str] = writer.set_step_cost(step_type, cost)
-
-    return tx_result
+    return writer.set_step_cost(step_type, cost)
 
 
 def _init_for_set_step_price(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -72,13 +69,13 @@ def _init_for_set_step_price(sub_parser, common_parent_parser, invoke_parent_par
     score_parser.set_defaults(func=_set_step_price)
 
 
-def _set_step_price(args) -> str:
+def _set_step_price(args) -> bytes:
     step_price: int = args.step_price
 
     writer = create_writer_by_args(args)
-    tx_result: Optional[str] = writer.set_step_price(step_price)
+    ret: bytes = writer.set_step_price(step_price)
 
-    return tx_result
+    return ret
 
 
 def _init_for_set_max_step_limit(
@@ -97,14 +94,14 @@ def _init_for_set_max_step_limit(
     score_parser.set_defaults(func=_set_max_step_limit)
 
 
-def _set_max_step_limit(args) -> str:
+def _set_max_step_limit(args) -> bytes:
     context_type: str = args.context_type
     value: int = args.value
 
     writer = create_writer_by_args(args)
-    tx_result: Optional[str] = writer.set_max_step_limit(context_type, value)
+    ret: bytes = writer.set_max_step_limit(context_type, value)
 
-    return tx_result
+    return ret
 
 
 def _init_for_get_step_costs(sub_parser, common_parent_parser):
@@ -175,10 +172,7 @@ def _get_max_step_limit(args) -> int:
     context_type: str = args.context_type
 
     reader = create_reader_by_args(args)
-    max_step_limit: dict = reader.get_max_step_limit(context_type)
-    max_step_limit = int(max_step_limit, 16)
-
-    # print_response(f"MaxStepLimit : {int(max_step_limit, 16)}")
-    print_response(max_step_limit)
+    max_step_limit: int = reader.get_max_step_limit(context_type)
+    print(max_step_limit)
 
     return 0

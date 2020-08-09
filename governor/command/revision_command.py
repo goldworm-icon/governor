@@ -42,7 +42,7 @@ def _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parse
     score_parser.set_defaults(func=_set_revision)
 
 
-def _set_revision(args) -> str:
+def _set_revision(args) -> bytes:
     revision: int = args.revision
     name: str = args.name
 
@@ -83,8 +83,7 @@ def _init_for_get_version(sub_parser, common_parent_parser):
 
 def _get_version(args) -> int:
     reader = create_reader_by_args(args)
-    version: int = reader.get_version()
-
-    print_response(version)
+    version: str = reader.get_version()
+    print(version)
 
     return 0

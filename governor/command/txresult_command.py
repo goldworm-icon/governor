@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from governor.governance import create_reader_by_args
-from governor.utils import print_tx_result
+import icon
+from icon.utils.convert_type import hex_to_bytes
+
+from ..governance import create_reader_by_args
 
 
-def init(sub_parser, common_parent_parser, invoke_parent_parser):
+def init(sub_parser, common_parent_parser, _invoke_parent_parser):
     name = "txresult"
     desc = "getTransactionResult command"
 
@@ -37,10 +39,10 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
 
 
 def _get_tx_result(args) -> int:
-    tx_hash: str = args.tx_hash
+    tx_hash: bytes = hex_to_bytes(args.tx_hash)
 
     reader = create_reader_by_args(args)
-    tx_result: dict = reader.get_tx_result(tx_hash)
-    print_tx_result(tx_result)
+    tx_result: icon.TransactionResult = reader.get_tx_result(tx_hash)
+    print(tx_result)
 
     return 0
