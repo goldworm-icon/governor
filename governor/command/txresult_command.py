@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .governance import create_reader_by_args
-from .utils import print_tx_result
+from governor.governance import create_reader_by_args
+from governor.utils import print_tx_result
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):

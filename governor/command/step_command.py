@@ -15,8 +15,8 @@
 # limitations under the License.
 from typing import Optional
 
-from .governance import create_reader_by_args, create_writer_by_args
-from .utils import print_response
+from governor.governance import create_reader_by_args, create_writer_by_args
+from governor.utils import print_response
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):

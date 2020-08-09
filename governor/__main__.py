@@ -22,14 +22,25 @@ import time
 from typing import Optional
 
 from . import __about__
-from . import revision_command
-from . import score_command
-from . import step_command
-from . import txresult_command
-from .constants import DEFAULT_URL, DEFAULT_NID, COLUMN
-from .constants import PREDEFINED_URLS
+from .command import (
+    step_command,
+    revision_command,
+    score_command,
+    txresult_command,
+)
+from .constants import (
+    DEFAULT_URL,
+    DEFAULT_NID,
+    COLUMN,
+    PREDEFINED_URLS,
+)
 from .governance import create_client
-from .utils import print_title, print_tx_result, print_response, get_url
+from .utils import (
+    print_title,
+    print_tx_result,
+    print_response,
+    get_url,
+)
 
 
 def main() -> int:
