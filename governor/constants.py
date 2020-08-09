@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from icon import AddressPrefix, Address
 
-EOA_ADDRESS = "hx1234567890123456789012345678901234567890"
-GOVERNANCE_ADDRESS = "cx0000000000000000000000000000000000000001"
-ZERO_ADDRESS = "cx0000000000000000000000000000000000000000"
+
+EOA_ADDRESS = Address.from_string("hx1234567890123456789012345678901234567890")
+ZERO_ADDRESS = Address.from_int(AddressPrefix.CONTRACT, 0)
+GOVERNANCE_ADDRESS = Address.from_int(AddressPrefix.CONTRACT, 1)
 
 DEFAULT_URL = "http://127.0.0.1:9000/api/v3"
 DEFAULT_NID = 3

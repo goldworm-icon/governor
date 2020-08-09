@@ -8,11 +8,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 about = {}
-path = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)),
-    "governor/__about__.py"
-)
-with open(path, "r", encoding='utf-8') as f:
+path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "governor/__about__.py")
+with open(path, "r", encoding="utf-8") as f:
     exec(f.read(), about)
 
 setuptools.setup(
@@ -30,9 +27,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
     ],
-    entry_points={
-        'console_scripts': [
-            'governor=governor.__main__:main'
-        ]
-    }
+    entry_points={"console_scripts": ["governor=governor.__main__:main"]},
 )

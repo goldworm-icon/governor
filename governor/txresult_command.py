@@ -23,15 +23,14 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
     desc = "getTransactionResult command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser], help=desc
+    )
 
     score_parser.add_argument(
         "tx_hash",
         type=str,
         nargs="?",
-        help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20"
+        help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
     )
 
     score_parser.set_defaults(func=_get_tx_result)

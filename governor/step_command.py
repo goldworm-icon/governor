@@ -33,22 +33,17 @@ def _init_for_set_step_cost(sub_parser, common_parent_parser, invoke_parent_pars
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser, invoke_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
+    )
 
     score_parser.add_argument(
         "step_type",
         type=str,
         nargs="?",
-        help="step_type ex) default, apiCall, contractSet, input, eventlog"
+        help="step_type ex) default, apiCall, contractSet, input, eventlog",
     )
     score_parser.add_argument(
-        "cost",
-        type=int,
-        nargs="?",
-        default=-1,
-        help="cost ex) 1000"
+        "cost", type=int, nargs="?", default=-1, help="cost ex) 1000"
     )
 
     score_parser.set_defaults(func=_set_step_cost)
@@ -69,16 +64,10 @@ def _init_for_set_step_price(sub_parser, common_parent_parser, invoke_parent_par
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser, invoke_parent_parser],
-        help=desc)
-
-    score_parser.add_argument(
-        "step_price",
-        type=int,
-        nargs="?",
-        help=""
+        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
     )
+
+    score_parser.add_argument("step_price", type=int, nargs="?", help="")
 
     score_parser.set_defaults(func=_set_step_price)
 
@@ -92,28 +81,18 @@ def _set_step_price(args) -> str:
     return tx_result
 
 
-def _init_for_set_max_step_limit(sub_parser, common_parent_parser, invoke_parent_parser):
+def _init_for_set_max_step_limit(
+    sub_parser, common_parent_parser, invoke_parent_parser
+):
     name = "setMaxStepLimit"
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser, invoke_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
+    )
 
-    score_parser.add_argument(
-        "context_type",
-        type=str,
-        nargs="?",
-        help=""
-    )
-    score_parser.add_argument(
-        "value",
-        type=int,
-        nargs="?",
-        default=-1,
-        help=""
-    )
+    score_parser.add_argument("context_type", type=str, nargs="?", help="")
+    score_parser.add_argument("value", type=int, nargs="?", default=-1, help="")
 
     score_parser.set_defaults(func=_set_max_step_limit)
 
@@ -133,9 +112,8 @@ def _init_for_get_step_costs(sub_parser, common_parent_parser):
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser], help=desc
+    )
 
     score_parser.set_defaults(func=_get_step_costs)
 
@@ -165,9 +143,8 @@ def _init_for_get_step_price(sub_parser, common_parent_parser):
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser], help=desc
+    )
 
     score_parser.set_defaults(func=_get_step_price)
 
@@ -186,16 +163,10 @@ def _init_for_get_max_step_limit(sub_parser, common_parent_parser):
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser],
-        help=desc)
-
-    score_parser.add_argument(
-        "context_type",
-        type=str,
-        nargs="?",
-        help=""
+        name, parents=[common_parent_parser], help=desc
     )
+
+    score_parser.add_argument("context_type", type=str, nargs="?", help="")
 
     score_parser.set_defaults(func=_get_max_step_limit)
 

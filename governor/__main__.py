@@ -21,15 +21,15 @@ import sys
 import time
 from typing import Optional
 
-from governor.constants import PREDEFINED_URLS
+from . import __about__
 from . import revision_command
 from . import score_command
 from . import step_command
 from . import txresult_command
 from .constants import DEFAULT_URL, DEFAULT_NID, COLUMN
-from .governance import create_icon_service
+from .constants import PREDEFINED_URLS
+from .governance import create_client
 from .utils import print_title, print_tx_result, print_response, get_url
-from . import __about__
 
 
 def main() -> int:
@@ -37,14 +37,15 @@ def main() -> int:
         score_command.init,
         step_command.init,
         revision_command.init,
-        txresult_command.init
+        txresult_command.init,
     ]
 
     parser = argparse.ArgumentParser(
         prog=__about__.name,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__about__.description,
-        epilog=_get_epilog())
+        epilog=_get_epilog(),
+    )
     sub_parser = parser.add_subparsers(title="subcommands")
 
     common_parent_parser = create_common_parser()
@@ -89,8 +90,7 @@ def _init_logger(args):
     }
 
     logging.basicConfig(
-        filename="governor.log",
-        level=log_level.get(args.log, logging.DEBUG)
+        filename="governor.log", level=log_level.get(args.log, logging.DEBUG)
     )
 
 
@@ -118,7 +118,7 @@ def _print_tx_result(args, tx_hash: str) -> int:
     # Wait to finish the requested transaction on blockchain
     time.sleep(3)
 
-    icon_service = create_icon_service(args.url)
+    icon_service = create_client(args.url)
     repeat = 3
 
     for i in range(repeat):
@@ -150,24 +150,22 @@ def _get_epilog() -> str:
 def create_common_parser() -> argparse.ArgumentParser:
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument(
-        "--url", "-u",
+        "--url",
+        "-u",
         type=str,
         required=False,
         default=DEFAULT_URL,
-        help=f"node url default) {DEFAULT_URL}"
+        help=f"node url default) {DEFAULT_URL}",
     )
     parent_parser.add_argument(
-        "--nid", "-n",
+        "--nid",
+        "-n",
         type=int,
         required=False,
         default=-1,
-        help=f"networkId default({DEFAULT_NID} ex) mainnet(1), testnet(2)"
+        help=f"networkId default({DEFAULT_NID} ex) mainnet(1), testnet(2)",
     )
-    parent_parser.add_argument(
-        "--verbose", "-v",
-        required=False,
-        action="store_true"
-    )
+    parent_parser.add_argument("--verbose", "-v", required=False, action="store_true")
     parent_parser.add_argument(
         "--log",
         type=str,
@@ -175,7 +173,7 @@ def create_common_parser() -> argparse.ArgumentParser:
         help=(
             "Write logging messages to 'governor.log' with a given level\n"
             "ex) debug, info, warn, error, fatal"
-        )
+        ),
     )
 
     return parent_parser
@@ -190,29 +188,28 @@ def create_invoke_parser() -> argparse.ArgumentParser:
     parent_parser = argparse.ArgumentParser(add_help=False)
 
     parent_parser.add_argument(
-        "--password", "-p",
+        "--password",
+        "-p",
         type=str,
         required=False,
         default=None,
-        help="keystore password"
+        help="keystore password",
     )
     parent_parser.add_argument(
-        "--keystore", "-k",
-        type=str,
-        required=True,
-        help="keystore file path"
+        "--keystore", "-k", type=str, required=True, help="keystore file path"
     )
     parent_parser.add_argument(
         "--no-result",
         action="store_true",
         required=False,
-        help="Display transaction result automatically after invoking is done"
+        help="Display transaction result automatically after invoking is done",
     )
     parent_parser.add_argument(
-        "--yes", "-y",
+        "--yes",
+        "-y",
         action="store_true",
         required=False,
-        help="Automatic yes to prompts"
+        help="Automatic yes to prompts",
     )
 
     return parent_parser

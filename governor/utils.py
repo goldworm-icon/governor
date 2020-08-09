@@ -63,11 +63,9 @@ def print_tx_result(tx_result: dict):
 
 
 def is_url_valid(url: str) -> bool:
-    ps: 'ParseResult' = urlparse(url)
+    ps: "ParseResult" = urlparse(url)
 
-    return ps.scheme in ("http", "https") \
-        and len(ps.netloc) > 0 \
-        and len(ps.path) > 0
+    return ps.scheme in ("http", "https") and len(ps.netloc) > 0 and len(ps.path) > 0
 
 
 def get_predefined_url(name: str) -> Optional[str]:

@@ -33,7 +33,7 @@ class TestAbout(unittest.TestCase):
             "description": __about__.description,
             "author": __about__.author,
             "author_email": __about__.author_email,
-            "url": __about__.url
+            "url": __about__.url,
         }
 
         for key in expected:

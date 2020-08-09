@@ -29,23 +29,14 @@ def _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parse
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser, invoke_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
+    )
 
     score_parser.add_argument(
-        "revision",
-        type=int,
-        nargs="?",
-        default=-1,
-        help="revision ex) 3"
+        "revision", type=int, nargs="?", default=-1, help="revision ex) 3"
     )
     score_parser.add_argument(
-        "name",
-        type=str,
-        nargs="?",
-        default="",
-        help="iconservice version ex) 1.2.3"
+        "name", type=str, nargs="?", default="", help="iconservice version ex) 1.2.3"
     )
 
     score_parser.set_defaults(func=_set_revision)
@@ -64,9 +55,8 @@ def _init_for_get_revision(sub_parser, common_parent_parser):
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser], help=desc
+    )
 
     score_parser.set_defaults(func=_get_revision)
 
@@ -85,9 +75,8 @@ def _init_for_get_version(sub_parser, common_parent_parser):
     desc = f"{name} command"
 
     score_parser = sub_parser.add_parser(
-        name,
-        parents=[common_parent_parser],
-        help=desc)
+        name, parents=[common_parent_parser], help=desc
+    )
 
     score_parser.set_defaults(func=_get_version)
 
