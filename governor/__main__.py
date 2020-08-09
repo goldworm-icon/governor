@@ -19,7 +19,7 @@ import json
 import logging
 import sys
 import time
-from typing import Union, Dict
+from typing import Union
 
 import icon
 
@@ -39,8 +39,6 @@ from .constants import (
 from .governance import create_client
 from .utils import (
     print_title,
-    print_tx_result,
-    print_response,
     get_url,
 )
 
@@ -76,17 +74,8 @@ def main() -> int:
 
     _init_logger(args)
 
-    result: Union[int, str, bytes, Dict[str, str]] = args.func(args)
-    ret: int = _print_result(result)
-
-    if isinstance(ret, str):
-        print_response(ret)
-
-        if not args.no_result:
-            ret = _print_tx_result(args, tx_hash=ret)
-        else:
-            ret = 0
-
+    result: Union[int, bytes] = args.func(args)
+    ret: int = _print_result(args, result)
     return ret
 
 
@@ -123,11 +112,16 @@ def _print_arguments(args):
     print(f"{json.dumps(arguments, indent=4)}\n")
 
 
-def _print_result(result: Union[int, str, bytes, Dict[str, str]]) -> int:
-    pass
+def _print_result(args, result: Union[int, bytes]) -> int:
+    ret = 0
+
+    if isinstance(result, bytes) and not args.no_result:
+        ret = _print_tx_result(args.url, result)
+
+    return ret
 
 
-def _print_tx_result(args, tx_hash: bytes) -> int:
+def _print_tx_result(url: str, tx_hash: bytes) -> int:
     ret = 1
 
     if not (isinstance(tx_hash, bytes) and len(tx_hash) == 32):
@@ -136,7 +130,7 @@ def _print_tx_result(args, tx_hash: bytes) -> int:
     # Wait to finish the requested transaction on blockchain
     time.sleep(3)
 
-    client: icon.Client = create_client(args.url)
+    client: icon.Client = create_client(url)
     repeat = 3
 
     for i in range(repeat):

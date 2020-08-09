@@ -15,9 +15,9 @@
 # limitations under the License.
 
 import icon
-from icon.utils.convert_type import hex_to_bytes
 
 from ..governance import create_reader_by_args
+from ..utils import print_response
 
 
 def init(sub_parser, common_parent_parser, _invoke_parent_parser):
@@ -39,10 +39,10 @@ def init(sub_parser, common_parent_parser, _invoke_parent_parser):
 
 
 def _get_tx_result(args) -> int:
-    tx_hash: bytes = hex_to_bytes(args.tx_hash)
+    tx_hash: bytes = icon.hex_to_bytes(args.tx_hash)
 
     reader = create_reader_by_args(args)
     tx_result: icon.TransactionResult = reader.get_tx_result(tx_hash)
-    print(tx_result)
+    print_response(f"{tx_result}")
 
     return 0

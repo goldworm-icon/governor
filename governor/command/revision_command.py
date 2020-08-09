@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from governor.governance import create_writer_by_args, create_reader_by_args
-from governor.utils import print_response
+from typing import Dict
+
+from ..governance import create_writer_by_args, create_reader_by_args
+from ..utils import print_response
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -63,8 +65,7 @@ def _init_for_get_revision(sub_parser, common_parent_parser):
 
 def _get_revision(args) -> int:
     reader = create_reader_by_args(args)
-    revision: dict = reader.get_revision()
-
+    revision: Dict[str, str] = reader.get_revision()
     print_response(revision)
 
     return 0
@@ -84,6 +85,6 @@ def _init_for_get_version(sub_parser, common_parent_parser):
 def _get_version(args) -> int:
     reader = create_reader_by_args(args)
     version: str = reader.get_version()
-    print(version)
+    print_response(version)
 
     return 0

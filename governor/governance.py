@@ -204,7 +204,7 @@ class GovernanceReader(GovernanceListener):
 
         return self._client.call(params)
 
-    def get_version(self) -> Dict[str, str]:
+    def get_version(self) -> str:
         return self._call("getVersion")
 
     def get_revision(self) -> Dict[str, str]:
@@ -213,22 +213,20 @@ class GovernanceReader(GovernanceListener):
     def get_service_config(self) -> Dict[str, str]:
         return self._call("getServiceConfig")
 
-    def get_score_status(self, address: str) -> Dict[str, str]:
+    def get_score_status(self, address: icon.Address) -> Dict[str, str]:
         params = {"address": address}
         return self._call("getScoreStatus", params)
 
     def check_if_audit_enabled(self) -> bool:
         service_config = self.get_service_config()
-        if service_config["AUDIT"] == "0x1":
-            return True
-        else:
-            return False
+        return service_config["AUDIT"] == "0x1"
 
-    def get_step_costs(self):
+    def get_step_costs(self) -> Dict[str, str]:
         return self._call(method="getStepCosts")
 
-    def get_step_price(self):
-        return self._call(method="getStepPrice")
+    def get_step_price(self) -> int:
+        ret: str = self._call(method="getStepPrice")
+        return int(ret, base=0)
 
     def get_tx_result(self, tx_hash: bytes) -> icon.TransactionResult:
         return self._client.get_transaction_result(tx_hash)

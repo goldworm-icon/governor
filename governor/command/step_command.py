@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from governor.governance import create_reader_by_args, create_writer_by_args
-from governor.utils import print_response
+from typing import Dict
+
+from ..governance import create_reader_by_args, create_writer_by_args
+from ..utils import print_response
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -73,9 +75,7 @@ def _set_step_price(args) -> bytes:
     step_price: int = args.step_price
 
     writer = create_writer_by_args(args)
-    ret: bytes = writer.set_step_price(step_price)
-
-    return ret
+    return writer.set_step_price(step_price)
 
 
 def _init_for_set_max_step_limit(
@@ -99,9 +99,7 @@ def _set_max_step_limit(args) -> bytes:
     value: int = args.value
 
     writer = create_writer_by_args(args)
-    ret: bytes = writer.set_max_step_limit(context_type, value)
-
-    return ret
+    return writer.set_max_step_limit(context_type, value)
 
 
 def _init_for_get_step_costs(sub_parser, common_parent_parser):
@@ -117,7 +115,7 @@ def _init_for_get_step_costs(sub_parser, common_parent_parser):
 
 def _get_step_costs(args) -> int:
     reader = create_reader_by_args(args)
-    step_costs: dict = reader.get_step_costs()
+    step_costs: Dict[str, str] = reader.get_step_costs()
     step_costs = _convert_hex_to_int(step_costs)
 
     print_response(step_costs)
@@ -148,9 +146,9 @@ def _init_for_get_step_price(sub_parser, common_parent_parser):
 
 def _get_step_price(args) -> int:
     reader = create_reader_by_args(args)
-    step_price: str = reader.get_step_price()
+    step_price: int = reader.get_step_price()
 
-    print_response(f"stepPrice: {int(step_price, 16)}")
+    print_response(f"stepPrice: {step_price}, {hex(step_price)}")
 
     return 0
 
@@ -173,6 +171,6 @@ def _get_max_step_limit(args) -> int:
 
     reader = create_reader_by_args(args)
     max_step_limit: int = reader.get_max_step_limit(context_type)
-    print(max_step_limit)
+    print_response(f"maxStepLimit: {max_step_limit}")
 
     return 0

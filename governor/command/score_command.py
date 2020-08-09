@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
+from typing import Union, Dict
+
+import icon
 
 from governor.governance import create_writer_by_args, create_reader_by_args
 from governor.utils import print_response
@@ -89,7 +91,7 @@ def _update_governance_score(args) -> Union[int, str]:
     ret = writer.update(score_path, estimate)
 
     if estimate:
-        print(f"Estimate step: {ret}, {hex(ret)}")
+        print_response(f"Estimate step: {ret}, {hex(ret)}")
 
     return ret
 
@@ -113,10 +115,10 @@ def _init_for_get_score_status(sub_parser, common_parent_parser):
 
 
 def _get_score_status(args) -> int:
-    address: str = args.address
+    address: icon.Address = icon.Address.from_string(args.address)
 
     reader = create_reader_by_args(args)
-    result: dict = reader.get_score_status(address)
+    result: Dict[str, str] = reader.get_score_status(address)
     print_response(result)
 
     return 0
@@ -404,7 +406,7 @@ def _is_deployer(args) -> int:
 
     reader = create_reader_by_args(args)
     is_deployer: bool = reader.is_deployer(address)
-    print(is_deployer)
+    print_response(f"is_deployer: {is_deployer}")
 
     return 0
 
@@ -427,7 +429,7 @@ def _is_in_score_black_list(args) -> int:
 
     reader = create_reader_by_args(args)
     is_in_score_black_list: bool = reader.is_in_score_black_list(address)
-    print(is_in_score_black_list)
+    print_response(f"is_in_score_black_list: {is_in_score_black_list}")
 
     return 0
 
@@ -451,6 +453,6 @@ def _is_in_import_white_list(args) -> int:
 
     reader = create_reader_by_args(args)
     is_in_import_white_list: bool = reader.is_in_import_white_list(import_stmt)
-    print(is_in_import_white_list)
+    print_response(f"is_in_import_white_list: {is_in_import_white_list}")
 
     return 0

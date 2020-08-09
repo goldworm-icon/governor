@@ -46,7 +46,7 @@ def print_dict(data: dict):
     print(json.dumps(converted, indent=4))
 
 
-def print_response(content: Union[str, dict]):
+def print_response(content: Union[bool, int, str, dict]):
     print_title("Response", COLUMN)
 
     if isinstance(content, dict):
