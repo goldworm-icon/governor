@@ -19,7 +19,9 @@ import json
 import logging
 import sys
 import time
-from typing import Optional
+from typing import Union, Dict
+
+import icon
 
 from . import __about__
 from .command import (
@@ -74,7 +76,9 @@ def main() -> int:
 
     _init_logger(args)
 
-    ret: Optional[int, str] = args.func(args)
+    result: Union[int, str, bytes, Dict[str, str]] = args.func(args)
+    ret: int = _print_result(result)
+
     if isinstance(ret, str):
         print_response(ret)
 
@@ -119,23 +123,26 @@ def _print_arguments(args):
     print(f"{json.dumps(arguments, indent=4)}\n")
 
 
-def _print_tx_result(args, tx_hash: str) -> int:
+def _print_result(result: Union[int, str, bytes, Dict[str, str]]) -> int:
+    pass
+
+
+def _print_tx_result(args, tx_hash: bytes) -> int:
     ret = 1
 
-    if not (tx_hash.startswith("0x") and len(tx_hash) == 66):
-        print(tx_hash)
-        return ret
+    if not (isinstance(tx_hash, bytes) and len(tx_hash) == 32):
+        raise ValueError(f"Invalid txHash: {tx_hash}")
 
     # Wait to finish the requested transaction on blockchain
     time.sleep(3)
 
-    icon_service = create_client(args.url)
+    client: icon.Client = create_client(args.url)
     repeat = 3
 
     for i in range(repeat):
         try:
-            tx_result: dict = icon_service.get_transaction_result(tx_hash)
-            print_tx_result(tx_result)
+            tx_result: icon.TransactionResult = client.get_transaction_result(tx_hash)
+            print(tx_result)
             break
         except:
             if i + 1 == repeat:
