@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from icon import AddressPrefix, Address
+from icon.data.address import AddressPrefix, Address
 
 
 EOA_ADDRESS = Address.from_string("hx1234567890123456789012345678901234567890")

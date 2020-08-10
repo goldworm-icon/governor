@@ -80,7 +80,7 @@ def get_predefined_nid(name: str) -> int:
     return item[1] if item else -1
 
 
-def get_url(url: str) -> str:
+def resolve_url(url: str) -> str:
     predefined_url: str = get_predefined_url(url)
 
     if isinstance(predefined_url, str):

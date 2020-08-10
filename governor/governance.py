@@ -22,7 +22,7 @@ from urllib.parse import urlparse
 import icon
 
 from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS, COLUMN
-from .utils import print_title, print_dict, get_url, get_predefined_nid
+from .utils import print_title, print_dict, resolve_url, get_predefined_nid
 
 
 def _print_request(title: str, content: dict):
@@ -436,7 +436,7 @@ class GovernanceWriter(GovernanceListener):
 
 
 def create_reader_by_args(args) -> GovernanceReader:
-    url: str = get_url(args.url)
+    url: str = resolve_url(args.url)
     nid: int = _get_nid(args)
 
     reader = create_reader(url, nid)
@@ -448,12 +448,12 @@ def create_reader_by_args(args) -> GovernanceReader:
 
 
 def create_reader(url: str, nid: int) -> GovernanceReader:
-    icon_service = create_client(url)
-    return GovernanceReader(icon_service, nid)
+    client = create_client(url)
+    return GovernanceReader(client, nid)
 
 
 def create_writer_by_args(args) -> GovernanceWriter:
-    url: str = get_url(args.url)
+    url: str = resolve_url(args.url)
     nid: int = _get_nid(args)
     keystore_path: str = args.keystore
     password: str = args.password

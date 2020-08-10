@@ -28,7 +28,8 @@ from .command import (
     step_command,
     revision_command,
     score_command,
-    txresult_command,
+    transaction_command,
+    block_command,
 )
 from .constants import (
     DEFAULT_URL,
@@ -39,17 +40,18 @@ from .constants import (
 from .governance import create_client
 from .utils import (
     print_title,
-    get_url,
+    resolve_url,
 )
 
 
 def main() -> int:
-    handlers = [
+    handlers = (
         score_command.init,
         step_command.init,
         revision_command.init,
-        txresult_command.init,
-    ]
+        transaction_command.init,
+        block_command.init,
+    )
 
     parser = argparse.ArgumentParser(
         prog=__about__.name,
@@ -106,7 +108,7 @@ def _print_arguments(args):
         if name == "func":
             value = value.__name__
         elif name == "url":
-            value = get_url(value)
+            value = resolve_url(value)
         arguments[name] = value
 
     print(f"{json.dumps(arguments, indent=4)}\n")
