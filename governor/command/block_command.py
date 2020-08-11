@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Dict, Optional
+
 import icon
 
 from ..governance import create_client
@@ -24,6 +26,7 @@ def init(sub_parser, common_parent_parser, _invoke_parent_parser):
     _init_block_by_hash(sub_parser, common_parent_parser)
     _init_block_by_height(sub_parser, common_parent_parser)
     _init_last_block(sub_parser, common_parent_parser)
+    _init_get_block(sub_parser, common_parent_parser)
 
 
 def _init_block_by_hash(sub_parser, common_parent_parser):
@@ -73,6 +76,25 @@ def _init_last_block(sub_parser, common_parent_parser):
     score_parser.set_defaults(func=_get_last_block)
 
 
+def _init_get_block(sub_parser, common_parent_parser):
+    name = "getblock"
+    desc = "icx_getBlock command"
+
+    score_parser = sub_parser.add_parser(
+        name, parents=[common_parent_parser], help=desc
+    )
+
+    score_parser.add_argument(
+        "value",
+        type=str,
+        nargs="?",
+        default=None,
+        help="block_hash or block_height",
+    )
+
+    score_parser.set_defaults(func=_get_block)
+
+
 def _get_block_by_hash(args) -> int:
     url: str = resolve_url(args.url)
     block_hash: bytes = icon.hex_to_bytes(args.block_hash)
@@ -101,5 +123,22 @@ def _get_last_block(args) -> int:
     client: icon.Client = create_client(url)
     block: icon.Block = client.get_last_block()
     print_response(f"{block}")
+
+    return 0
+
+
+def _get_block(args) -> int:
+    url: str = resolve_url(args.url)
+    value: Optional[str] = args.value
+
+    if isinstance(value, str):
+        if value.startswith("0x") and len(value) == 66:
+            value: bytes = icon.hex_to_bytes(value)
+        else:
+            value: int = int(value, 0)
+
+    client: icon.Client = create_client(url)
+    result: Dict[str, str] = client.get_block(value)
+    print_response(f"{result}")
 
     return 0

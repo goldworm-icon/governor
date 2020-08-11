@@ -30,6 +30,7 @@ from .command import (
     score_command,
     transaction_command,
     block_command,
+    status_command,
 )
 from .constants import (
     DEFAULT_URL,
@@ -51,6 +52,7 @@ def main() -> int:
         revision_command.init,
         transaction_command.init,
         block_command.init,
+        status_command.init,
     )
 
     parser = argparse.ArgumentParser(
