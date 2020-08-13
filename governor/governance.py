@@ -20,7 +20,6 @@ from typing import Dict, Union, Any
 from urllib.parse import urlparse
 
 import icon
-
 from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS, COLUMN
 from .utils import print_title, print_dict, resolve_url, get_predefined_nid
 
@@ -41,13 +40,17 @@ class TxBuildHelper:
     ) -> Dict[str, str]:
         logging.debug("TxBuildHelper._deploy() start")
 
-        transaction: Dict[str, str] = icon.DeployTransactionBuilder().from_(
-            owner.address
-        ).to(to).step_limit(step_limit).version(3).nid(self._nid).content_from_path(
-            path
-        ).params(
-            params
-        ).build()
+        transaction: Dict[str, str] = (
+            icon.DeployTransactionBuilder()
+            .from_(owner.address)
+            .to(to)
+            .step_limit(step_limit)
+            .version(3)
+            .nid(self._nid)
+            .content_from_path(path)
+            .params(params)
+            .build()
+        )
 
         logging.debug("TxBuildHelper._deploy() end")
         return transaction
@@ -65,9 +68,7 @@ class TxBuildHelper:
         params=None,
         step_limit=0x80000000,
     ) -> Dict[str, str]:
-        logging.debug("TxBuilderHelper.update() start")
         transaction = self._deploy(owner, to, path, params, step_limit)
-        logging.debug("TxBuilderHelper.update() end")
 
         return transaction
 
@@ -194,11 +195,9 @@ class GovernanceReader(GovernanceListener):
         self._from = address
 
     def _call(self, method, params=None) -> Union[str, Dict[str, str]]:
-        params: Dict[str, str] = icon.CallBuilder(method) \
-            .from_(self._from) \
-            .to(GOVERNANCE_ADDRESS) \
-            .params(params) \
-            .build()
+        params: Dict[str, str] = icon.CallBuilder(method).from_(self._from).to(
+            GOVERNANCE_ADDRESS
+        ).params(params).build()
 
         self.on_send_request(params)
 
@@ -258,21 +257,20 @@ class GovernanceReader(GovernanceListener):
 
 
 class GovernanceWriter(GovernanceListener):
-    def __init__(self, client: icon.Client, nid: int, owner):
+    def __init__(self, client: icon.Client, nid: int, owner, step_limit: int):
         super().__init__()
 
         self._client = client
         self._owner = owner
         self._nid = nid
+        self._step_limit = step_limit
 
-    def _call(
-        self, method: str, params: Dict[str, Any], step_limit: int = 0x10000000
-    ) -> bytes:
+    def _call(self, method: str, params: Dict[str, Any]) -> bytes:
         tx_handler = self._create_tx_handler()
         return tx_handler.invoke(
             owner=self._owner,
             to=GOVERNANCE_ADDRESS,
-            step_limit=step_limit,
+            step_limit=self._step_limit,
             method=method,
             params=params,
         )
@@ -291,7 +289,11 @@ class GovernanceWriter(GovernanceListener):
 
         tx_handler = self._create_tx_handler()
         return tx_handler.update(
-            self._owner, GOVERNANCE_ADDRESS, score_path, estimate=estimate
+            self._owner,
+            GOVERNANCE_ADDRESS,
+            score_path,
+            step_limit=self._step_limit,
+            estimate=estimate,
         )
 
     def accept_score(self, tx_hash: str) -> bytes:
@@ -455,6 +457,7 @@ def create_reader(url: str, nid: int) -> GovernanceReader:
 def create_writer_by_args(args) -> GovernanceWriter:
     url: str = resolve_url(args.url)
     nid: int = _get_nid(args)
+    step_limit: int = args.step_limit
     keystore_path: str = args.keystore
     password: str = args.password
     yes: bool = args.yes
@@ -462,7 +465,7 @@ def create_writer_by_args(args) -> GovernanceWriter:
     if password is None:
         password = getpass.getpass("> Password: ")
 
-    writer = create_writer(url, nid, keystore_path, password)
+    writer = create_writer(url, nid, keystore_path, password, step_limit)
 
     callback = functools.partial(_confirm_callback, yes=yes)
     writer.set_on_send_request(callback)
@@ -471,12 +474,12 @@ def create_writer_by_args(args) -> GovernanceWriter:
 
 
 def create_writer(
-    url: str, nid: int, keystore_path: str, password: str
+    url: str, nid: int, keystore_path: str, password: str, step_limit: int
 ) -> GovernanceWriter:
-    icon_service = create_client(url)
+    client = create_client(url)
 
     owner_wallet = icon.KeyWallet.load(keystore_path, password)
-    return GovernanceWriter(icon_service, nid, owner_wallet)
+    return GovernanceWriter(client, nid, owner_wallet, step_limit)
 
 
 def create_client(url: str) -> icon.Client:

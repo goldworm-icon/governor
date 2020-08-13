@@ -215,6 +215,14 @@ def create_invoke_parser() -> argparse.ArgumentParser:
         "--keystore", "-k", type=str, required=True, help="keystore file path"
     )
     parent_parser.add_argument(
+        "--step-limit",
+        "-s",
+        type=int,
+        required=False,
+        default=0,
+        help="stepLimit configuration",
+    )
+    parent_parser.add_argument(
         "--no-result",
         action="store_true",
         required=False,

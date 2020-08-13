@@ -85,11 +85,7 @@ def _init_get_block(sub_parser, common_parent_parser):
     )
 
     score_parser.add_argument(
-        "value",
-        type=str,
-        nargs="?",
-        default=None,
-        help="block_hash or block_height",
+        "value", type=str, nargs="?", default=None, help="block_hash or block_height",
     )
 
     score_parser.set_defaults(func=_get_block)

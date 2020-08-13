@@ -35,10 +35,7 @@ def _init_get_status(sub_parser, common_parent_parser):
     )
 
     score_parser.add_argument(
-        "filter",
-        type=str,
-        nargs="?",
-        help="filter ex) lastblock"
+        "filter", type=str, nargs="?", help="filter ex) lastblock"
     )
 
     score_parser.set_defaults(func=_get_status)
