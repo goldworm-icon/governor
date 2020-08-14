@@ -17,6 +17,7 @@
 from typing import Union, Dict
 
 import icon
+
 from governor.governance import create_writer_by_args, create_reader_by_args
 from governor.utils import print_response
 
@@ -71,13 +72,6 @@ def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
         nargs="?",
         help="path where governance SCORE is located\nex) ./governance",
     )
-    score_parser.add_argument(
-        "--estimate",
-        action="store_true",
-        default=False,
-        required=False,
-        help="estimate step",
-    )
 
     score_parser.set_defaults(func=_update_governance_score)
 
@@ -87,7 +81,7 @@ def _update_governance_score(args) -> Union[int, str]:
     estimate: bool = args.estimate
 
     writer = create_writer_by_args(args)
-    ret = writer.update(score_path, estimate)
+    ret = writer.update(score_path)
 
     if estimate:
         print_response(f"Estimate step: {ret}, {hex(ret)}")

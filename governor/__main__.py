@@ -22,6 +22,7 @@ import time
 from typing import Union
 
 import icon
+
 from . import __about__
 from .command import (
     step_command,
@@ -235,6 +236,13 @@ def create_invoke_parser() -> argparse.ArgumentParser:
         action="store_true",
         required=False,
         help="Automatic yes to prompts",
+    )
+    parent_parser.add_argument(
+        "--estimate",
+        action="store_true",
+        required=False,
+        default=False,
+        help="estimate step to invoke a given tx",
     )
 
     return parent_parser

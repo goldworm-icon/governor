@@ -14,13 +14,13 @@
 
 import functools
 import getpass
-import logging
 import os.path
-from typing import Dict, Union, Any
+from typing import Dict, Union, Any, Optional
 from urllib.parse import urlparse
 
 import icon
-from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, ZERO_ADDRESS, COLUMN
+
+from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, COLUMN
 from .utils import print_title, print_dict, resolve_url, get_predefined_nid
 
 
@@ -28,148 +28,6 @@ def _print_request(title: str, content: dict):
     print_title(title, COLUMN)
     print_dict(content)
     print("")
-
-
-class TxBuildHelper:
-    def __init__(self, client: icon.Client, nid: int):
-        self._client: icon.Client = client
-        self._nid = nid
-
-    def _deploy(
-        self, owner: icon.KeyWallet, to: icon.Address, path: str, params, step_limit
-    ) -> Dict[str, str]:
-        logging.debug("TxBuildHelper._deploy() start")
-
-        transaction: Dict[str, str] = (
-            icon.DeployTransactionBuilder()
-            .from_(owner.address)
-            .to(to)
-            .step_limit(step_limit)
-            .version(3)
-            .nid(self._nid)
-            .content_from_path(path)
-            .params(params)
-            .build()
-        )
-
-        logging.debug("TxBuildHelper._deploy() end")
-        return transaction
-
-    def install(
-        self, owner: icon.KeyWallet, path: str, params=None, step_limit=0x50000000
-    ) -> Dict[str, str]:
-        return self._deploy(owner, ZERO_ADDRESS, path, params, step_limit)
-
-    def update(
-        self,
-        owner: icon.KeyWallet,
-        to: icon.Address,
-        path: str,
-        params=None,
-        step_limit=0x80000000,
-    ) -> Dict[str, str]:
-        transaction = self._deploy(owner, to, path, params, step_limit)
-
-        return transaction
-
-    def invoke(self, owner: icon.KeyWallet, to, method, params, step_limit=0x10000000):
-        return (
-            icon.CallTransactionBuilder(method)
-            .from_(owner.address)
-            .to(to)
-            .step_limit(step_limit)
-            .nid(self._nid)
-            .params(params)
-            .build()
-        )
-
-
-class TxHandler:
-    def __init__(
-        self, client: icon.Client, nid: int, on_send_request: callable(Dict[str, str])
-    ):
-        self._client = client
-        self._nid = nid
-        self._on_send_request = on_send_request
-        self._tx_build_helper = TxBuildHelper(client, nid)
-
-    def _call_on_send_request(self, content: Dict[str, str]) -> bool:
-        if self._on_send_request:
-            return self._on_send_request(content)
-
-        return False
-
-    def install(
-        self,
-        owner: icon.KeyWallet,
-        path: str,
-        params=None,
-        step_limit=0x50000000,
-        estimate: bool = False,
-    ):
-
-        transaction: Dict[str, str] = self._tx_build_helper.install(
-            owner, path, params, step_limit
-        )
-        return self._run(transaction, owner, estimate)
-
-    def update(
-        self,
-        owner: icon.KeyWallet,
-        to: icon.Address,
-        path: str,
-        params=None,
-        step_limit=0x70000000,
-        estimate: bool = False,
-    ):
-        transaction: Dict[str, str] = self._tx_build_helper.update(
-            owner, to, path, params, step_limit
-        )
-        return self._run(transaction, owner, estimate)
-
-    def invoke(
-        self,
-        owner: icon.KeyWallet,
-        to: icon.Address,
-        method: str,
-        params: Dict[str, Any],
-        step_limit=0x10000000,
-        estimate: bool = False,
-    ):
-        transaction: Dict[str, str] = self._tx_build_helper.invoke(
-            owner, to, method, params, step_limit
-        )
-        return self._run(transaction, owner, estimate)
-
-    def _run(
-        self, params: Dict[str, str], owner: icon.KeyWallet, estimate: bool
-    ) -> Union[int, bytes]:
-        logging.debug("TxHandler._run() start")
-
-        if estimate:
-            ret: int = self._estimate_step(params)
-        else:
-            ret: bytes = self._send_transaction(owner, params)
-
-        logging.debug("TxHandler._run() end")
-        return ret
-
-    def _send_transaction(self, owner: icon.KeyWallet, params: Dict[str, str]) -> bytes:
-        logging.debug("TxHandler._send_transaction() start")
-
-        ret = self._call_on_send_request(params)
-        if ret:
-            ret = self._client.send_transaction(params, owner.private_key)
-
-        logging.debug("TxHandler._send_transaction() end")
-        return ret
-
-    def _estimate_step(self, params: Dict[str, str]) -> int:
-        logging.debug("TxHandler._estimate_step() start")
-        ret = self._client.estimate_step(params)
-        logging.debug("TxHandler._estimate_step() end")
-
-        return ret
 
 
 class GovernanceListener(object):
@@ -180,13 +38,13 @@ class GovernanceListener(object):
         self._on_send_request = func
 
     @property
-    def on_send_request(self) -> callable(dict):
+    def on_send_request(self) -> callable(Dict[str, str]):
         return self._on_send_request
 
 
 class GovernanceReader(GovernanceListener):
     def __init__(
-        self, client: icon.Client, nid: int, address: icon.Address = EOA_ADDRESS
+            self, client: icon.Client, nid: int, address: icon.Address = EOA_ADDRESS
     ):
         super().__init__()
 
@@ -195,12 +53,15 @@ class GovernanceReader(GovernanceListener):
         self._from = address
 
     def _call(self, method, params=None) -> Union[str, Dict[str, str]]:
-        params: Dict[str, str] = icon.CallBuilder(method).from_(self._from).to(
-            GOVERNANCE_ADDRESS
-        ).params(params).build()
+        params: Dict[str, str] = (
+            icon.CallBuilder()
+                .from_(self._from)
+                .to(GOVERNANCE_ADDRESS)
+                .data(method, params)
+                .build()
+        )
 
         self.on_send_request(params)
-
         return self._client.call(params)
 
     def get_version(self) -> str:
@@ -257,28 +118,55 @@ class GovernanceReader(GovernanceListener):
 
 
 class GovernanceWriter(GovernanceListener):
-    def __init__(self, client: icon.Client, nid: int, owner, step_limit: int):
+    def __init__(self, client: icon.Client, nid: int, owner: icon.KeyWallet, step_limit: int, estimate: bool):
         super().__init__()
 
         self._client = client
         self._owner = owner
         self._nid = nid
         self._step_limit = step_limit
+        self._estimate = estimate
 
-    def _call(self, method: str, params: Dict[str, Any]) -> bytes:
-        tx_handler = self._create_tx_handler()
-        return tx_handler.invoke(
-            owner=self._owner,
-            to=GOVERNANCE_ADDRESS,
-            step_limit=self._step_limit,
-            method=method,
-            params=params,
+    def _create_call_tx(self, method: str, params: Dict[str, Any]) -> icon.builder.Transaction:
+        return (
+            icon.CallTransactionBuilder()
+                .nid(self._nid)
+                .from_(self._owner.address)
+                .to(GOVERNANCE_ADDRESS)
+                .step_limit(self._step_limit)
+                .call_data(method, params)
+                .build()
         )
 
-    def _create_tx_handler(self) -> TxHandler:
-        return TxHandler(self._client, self._nid, self.on_send_request)
+    def _create_update_tx(self, score_path: str) -> icon.builder.Transaction:
+        return (
+            icon.DeployTransactionBuilder()
+                .nid(self._nid)
+                .from_(self._owner.address)
+                .to(GOVERNANCE_ADDRESS)
+                .step_limit(self._step_limit)
+                .deploy_data_from_path(score_path, params=None)
+                .build()
+        )
 
-    def update(self, score_path: str, estimate: bool) -> Union[int, bytes]:
+    def _run(self, tx: icon.builder.Transaction) -> Union[int, bytes]:
+        if self._estimate:
+            return self._estimate_step(tx)
+        else:
+            return self._send_transaction(tx)
+
+    def _call(self, method: str, params: Optional[Dict[str, Any]]) -> Union[int, bytes]:
+        tx: icon.builder.Transaction = self._create_call_tx(method, params)
+        return self._run(tx)
+
+    def _estimate_step(self, tx: icon.builder.Transaction) -> int:
+        return self._client.estimate_step(tx)
+
+    def _send_transaction(self, tx: icon.builder.Transaction) -> bytes:
+        tx.sign(self._owner.private_key)
+        return self._client.send_transaction(tx)
+
+    def update(self, score_path: str) -> Union[int, bytes]:
         """Update governance SCORE
 
         :return: tx_hash
@@ -287,14 +175,8 @@ class GovernanceWriter(GovernanceListener):
         if not os.path.isfile(path):
             raise Exception(f"Invalid score path: {score_path}")
 
-        tx_handler = self._create_tx_handler()
-        return tx_handler.update(
-            self._owner,
-            GOVERNANCE_ADDRESS,
-            score_path,
-            step_limit=self._step_limit,
-            estimate=estimate,
-        )
+        tx: icon.builder.Transaction = self._create_update_tx(score_path)
+        return self._run(tx)
 
     def accept_score(self, tx_hash: str) -> bytes:
         method = "acceptScore"
@@ -461,11 +343,12 @@ def create_writer_by_args(args) -> GovernanceWriter:
     keystore_path: str = args.keystore
     password: str = args.password
     yes: bool = args.yes
+    estimate: bool = args.estimate
 
     if password is None:
         password = getpass.getpass("> Password: ")
 
-    writer = create_writer(url, nid, keystore_path, password, step_limit)
+    writer = create_writer(url, nid, keystore_path, password, step_limit, estimate)
 
     callback = functools.partial(_confirm_callback, yes=yes)
     writer.set_on_send_request(callback)
@@ -474,12 +357,12 @@ def create_writer_by_args(args) -> GovernanceWriter:
 
 
 def create_writer(
-    url: str, nid: int, keystore_path: str, password: str, step_limit: int
+        url: str, nid: int, keystore_path: str, password: str, step_limit: int, estimate: bool
 ) -> GovernanceWriter:
     client = create_client(url)
 
     owner_wallet = icon.KeyWallet.load(keystore_path, password)
-    return GovernanceWriter(client, nid, owner_wallet, step_limit)
+    return GovernanceWriter(client, nid, owner_wallet, step_limit, estimate)
 
 
 def create_client(url: str) -> icon.Client:
