@@ -22,7 +22,6 @@ import time
 from typing import Union
 
 import icon
-
 from . import __about__
 from .command import (
     step_command,
@@ -31,6 +30,7 @@ from .command import (
     transaction_command,
     block_command,
     status_command,
+    system_score_command,
 )
 from .constants import (
     DEFAULT_URL,
@@ -53,6 +53,7 @@ def main() -> int:
         transaction_command.init,
         block_command.init,
         status_command.init,
+        system_score_command.init,
     )
 
     parser = argparse.ArgumentParser(

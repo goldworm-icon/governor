@@ -15,9 +15,11 @@
 # limitations under the License.
 
 import json
-from typing import TYPE_CHECKING, Union, Optional
+import pprint
+from typing import TYPE_CHECKING, Union, Optional, Any
 from urllib.parse import urlparse
 
+import icon
 from .constants import COLUMN, PREDEFINED_URLS
 
 if TYPE_CHECKING:
@@ -90,3 +92,8 @@ def resolve_url(url: str) -> str:
         raise ValueError(f"Invalid url: {url}")
 
     return url
+
+
+def print_result(object_type: type, result: Any):
+    ret = icon.str_to_object_by_type(object_type, result)
+    pprint.pprint(ret)
