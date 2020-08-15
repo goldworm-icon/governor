@@ -115,22 +115,24 @@ def _init_for_get_step_costs(sub_parser, common_parent_parser):
 
 def _get_step_costs(args) -> int:
     reader = create_reader_by_args(args)
-    step_costs: Dict[str, str] = reader.get_step_costs()
-    step_costs = _convert_hex_to_int(step_costs)
+    result: Dict[str, str] = reader.get_step_costs()
+    step_costs: Dict[str, int] = _convert_hex_to_int(result)
 
     print_response(step_costs)
 
     return 0
 
 
-def _convert_hex_to_int(step_costs: dict) -> dict:
+def _convert_hex_to_int(step_costs: Dict[str, str]) -> Dict[str, int]:
+    ret = {}
+
     for key in step_costs:
         value: str = step_costs[key]
         assert isinstance(value, str)
 
-        step_costs[key] = int(value, 16)
+        ret[key] = int(value, base=0)
 
-    return step_costs
+    return ret
 
 
 def _init_for_get_step_price(sub_parser, common_parent_parser):

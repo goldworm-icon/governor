@@ -14,12 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import getpass
 import json
 import pprint
-from typing import TYPE_CHECKING, Union, Optional, Any
+from typing import TYPE_CHECKING, Union, Optional, Any, Dict
 from urllib.parse import urlparse
 
 import icon
+
 from .constants import COLUMN, PREDEFINED_URLS
 
 if TYPE_CHECKING:
@@ -94,6 +96,38 @@ def resolve_url(url: str) -> str:
     return url
 
 
+def resolve_nid(nid: int, url: str) -> int:
+    if nid < 0:
+        nid = get_predefined_nid(url)
+        if nid < 0:
+            ValueError("nid is required")
+
+    return nid
+
+
+def resolve_wallet(args) -> icon.KeyWallet:
+    path: str = args.keystore
+    password: str = args.password
+
+    if password is None:
+        password = getpass.getpass("> Password: ")
+
+    return icon.KeyWallet.load(path, password)
+
+
 def print_result(object_type: type, result: Any):
     ret = icon.str_to_object_by_type(object_type, result)
     pprint.pprint(ret)
+
+
+def confirm_transaction(request: Dict[str, str], yes: bool) -> bool:
+    print_title("Request", COLUMN)
+    print_dict(request)
+    print("")
+
+    if not yes:
+        ret: str = input("> Continue? [Y/n]")
+        if ret == "n":
+            return False
+
+    return True

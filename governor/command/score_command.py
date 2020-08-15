@@ -81,7 +81,7 @@ def _update_governance_score(args) -> Union[int, str]:
     estimate: bool = args.estimate
 
     writer = create_writer_by_args(args)
-    ret = writer.update(score_path)
+    ret = writer.deploy(score_path)
 
     if estimate:
         print_response(f"Estimate step: {ret}, {hex(ret)}")

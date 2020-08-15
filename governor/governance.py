@@ -14,14 +14,25 @@
 
 import functools
 import getpass
+import logging
 import os.path
 from typing import Dict, Union, Any, Optional
 from urllib.parse import urlparse
 
 import icon
 
-from .constants import EOA_ADDRESS, GOVERNANCE_ADDRESS, COLUMN
-from .utils import print_title, print_dict, resolve_url, get_predefined_nid
+from .constants import (
+    COLUMN,
+    EOA_ADDRESS,
+    GOVERNANCE_ADDRESS,
+    ZERO_ADDRESS,
+)
+from .utils import (
+    print_title,
+    print_dict,
+    resolve_url,
+    resolve_nid,
+)
 
 
 def _print_request(title: str, content: dict):
@@ -34,7 +45,7 @@ class GovernanceListener(object):
     def __init__(self):
         self._on_send_request = None
 
-    def set_on_send_request(self, func: callable(dict)):
+    def set_on_send_request(self, func: callable(Dict[str, str])):
         self._on_send_request = func
 
     @property
@@ -44,7 +55,7 @@ class GovernanceListener(object):
 
 class GovernanceReader(GovernanceListener):
     def __init__(
-            self, client: icon.Client, nid: int, address: icon.Address = EOA_ADDRESS
+        self, client: icon.Client, nid: int, address: icon.Address = EOA_ADDRESS
     ):
         super().__init__()
 
@@ -55,10 +66,10 @@ class GovernanceReader(GovernanceListener):
     def _call(self, method, params=None) -> Union[str, Dict[str, str]]:
         params: Dict[str, str] = (
             icon.CallBuilder()
-                .from_(self._from)
-                .to(GOVERNANCE_ADDRESS)
-                .data(method, params)
-                .build()
+            .from_(self._from)
+            .to(GOVERNANCE_ADDRESS)
+            .call_data(method, params)
+            .build()
         )
 
         self.on_send_request(params)
@@ -118,7 +129,14 @@ class GovernanceReader(GovernanceListener):
 
 
 class GovernanceWriter(GovernanceListener):
-    def __init__(self, client: icon.Client, nid: int, owner: icon.KeyWallet, step_limit: int, estimate: bool):
+    def __init__(
+        self,
+        client: icon.Client,
+        nid: int,
+        owner: icon.KeyWallet,
+        step_limit: int,
+        estimate: bool,
+    ):
         super().__init__()
 
         self._client = client
@@ -127,56 +145,77 @@ class GovernanceWriter(GovernanceListener):
         self._step_limit = step_limit
         self._estimate = estimate
 
-    def _create_call_tx(self, method: str, params: Dict[str, Any]) -> icon.builder.Transaction:
+    def _create_call_tx(
+        self, method: str, params: Dict[str, Any]
+    ) -> icon.builder.Transaction:
         return (
             icon.CallTransactionBuilder()
-                .nid(self._nid)
-                .from_(self._owner.address)
-                .to(GOVERNANCE_ADDRESS)
-                .step_limit(self._step_limit)
-                .call_data(method, params)
-                .build()
+            .nid(self._nid)
+            .from_(self._owner.address)
+            .to(GOVERNANCE_ADDRESS)
+            .step_limit(self._step_limit)
+            .call_data(method, params)
+            .build()
         )
 
-    def _create_update_tx(self, score_path: str) -> icon.builder.Transaction:
+    def _create_deploy_tx(self, score_path: str, update: bool) -> icon.builder.Transaction:
+        to = GOVERNANCE_ADDRESS if update else ZERO_ADDRESS
+
         return (
             icon.DeployTransactionBuilder()
-                .nid(self._nid)
-                .from_(self._owner.address)
-                .to(GOVERNANCE_ADDRESS)
-                .step_limit(self._step_limit)
-                .deploy_data_from_path(score_path, params=None)
-                .build()
+            .nid(self._nid)
+            .from_(self._owner.address)
+            .to(to)
+            .step_limit(self._step_limit)
+            .deploy_data_from_path(score_path, params=None)
+            .build()
         )
 
     def _run(self, tx: icon.builder.Transaction) -> Union[int, bytes]:
-        if self._estimate:
-            return self._estimate_step(tx)
-        else:
-            return self._send_transaction(tx)
+        logging.debug(f"_run() start: tx={tx}")
+
+        self.on_send_request(tx)
+        ret = self._send_transaction(tx)
+
+        logging.debug(f"_run() end")
+        return ret
 
     def _call(self, method: str, params: Optional[Dict[str, Any]]) -> Union[int, bytes]:
-        tx: icon.builder.Transaction = self._create_call_tx(method, params)
-        return self._run(tx)
+        logging.debug(f"_call() start: method={method} params={params}")
 
-    def _estimate_step(self, tx: icon.builder.Transaction) -> int:
-        return self._client.estimate_step(tx)
+        tx: icon.builder.Transaction = self._create_call_tx(method, params)
+        ret = self._run(tx)
+
+        logging.debug("_call() end")
+        return ret
 
     def _send_transaction(self, tx: icon.builder.Transaction) -> bytes:
-        tx.sign(self._owner.private_key)
-        return self._client.send_transaction(tx)
+        logging.debug(f"_send_transaction() start")
 
-    def update(self, score_path: str) -> Union[int, bytes]:
+        if not self._estimate:
+            tx.sign(self._owner.private_key)
+
+        ret = self._client.send_transaction(tx, self._estimate)
+
+        logging.debug(f"_send_transaction() end")
+        return ret
+
+    def deploy(self, path: str) -> Union[int, bytes]:
         """Update governance SCORE
 
         :return: tx_hash
         """
-        path: str = os.path.join(score_path, "package.json")
-        if not os.path.isfile(path):
-            raise Exception(f"Invalid score path: {score_path}")
+        logging.debug(f"deploy() start: path={path}")
 
-        tx: icon.builder.Transaction = self._create_update_tx(score_path)
-        return self._run(tx)
+        path: str = os.path.join(path, "package.json")
+        if not os.path.isfile(path):
+            raise Exception(f"Invalid score path: {path}")
+
+        tx: icon.builder.Transaction = self._create_deploy_tx(path, update=True)
+        ret = self._run(tx)
+
+        logging.debug(f"deploy() end")
+        return ret
 
     def accept_score(self, tx_hash: str) -> bytes:
         method = "acceptScore"
@@ -215,11 +254,15 @@ class GovernanceWriter(GovernanceListener):
         return self._call(method, params)
 
     def set_step_price(self, step_price: int) -> bytes:
+        logging.debug(f"set_step_price() start: step_price={step_price}")
 
         method = "setStepPrice"
         params = {"stepPrice": step_price}
 
-        return self._call(method, params)
+        ret = self._call(method, params)
+        logging.debug(f"set_step_price() end")
+
+        return ret
 
     def set_step_cost(self, step_type: str, cost: int) -> bytes:
         """
@@ -321,7 +364,7 @@ class GovernanceWriter(GovernanceListener):
 
 def create_reader_by_args(args) -> GovernanceReader:
     url: str = resolve_url(args.url)
-    nid: int = _get_nid(args)
+    nid: int = resolve_nid(args.nid, args.url)
 
     reader = create_reader(url, nid)
 
@@ -338,7 +381,7 @@ def create_reader(url: str, nid: int) -> GovernanceReader:
 
 def create_writer_by_args(args) -> GovernanceWriter:
     url: str = resolve_url(args.url)
-    nid: int = _get_nid(args)
+    nid: int = resolve_nid(args.nid, args.url)
     step_limit: int = args.step_limit
     keystore_path: str = args.keystore
     password: str = args.password
@@ -357,7 +400,12 @@ def create_writer_by_args(args) -> GovernanceWriter:
 
 
 def create_writer(
-        url: str, nid: int, keystore_path: str, password: str, step_limit: int, estimate: bool
+    url: str,
+    nid: int,
+    keystore_path: str,
+    password: str,
+    step_limit: int,
+    estimate: bool,
 ) -> GovernanceWriter:
     client = create_client(url)
 
@@ -370,8 +418,8 @@ def create_client(url: str) -> icon.Client:
     return icon.Client(icon.HTTPProvider(f"{o.scheme}://{o.netloc}", 3))
 
 
-def _confirm_callback(content: dict, yes: bool) -> bool:
-    _print_request("Request", content)
+def _confirm_callback(request: Dict[str, str], yes: bool) -> bool:
+    _print_request("Request", request)
 
     if not yes:
         ret: str = input("> Continue? [Y/n]")
@@ -379,14 +427,3 @@ def _confirm_callback(content: dict, yes: bool) -> bool:
             return False
 
     return True
-
-
-def _get_nid(args) -> int:
-    nid: int = args.nid
-
-    if nid < 0:
-        nid = get_predefined_nid(args.url)
-        if nid < 0:
-            ValueError("nid is required")
-
-    return nid
