@@ -17,7 +17,7 @@
 import getpass
 import json
 import pprint
-from typing import TYPE_CHECKING, Union, Optional, Any, Dict
+from typing import TYPE_CHECKING, Union, Optional, Any, Dict, Type
 from urllib.parse import urlparse
 
 import icon
@@ -115,7 +115,7 @@ def resolve_wallet(args) -> icon.KeyWallet:
     return icon.KeyWallet.load(path, password)
 
 
-def print_result(object_type: type, result: Any):
+def print_result(object_type: Optional[Type], result: Any):
     ret = icon.str_to_object_by_type(object_type, result)
     pprint.pprint(ret)
 
