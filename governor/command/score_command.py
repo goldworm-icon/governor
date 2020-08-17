@@ -18,7 +18,7 @@ from typing import Union, Dict
 
 import icon
 
-from governor.governance import create_writer_by_args, create_reader_by_args
+from governor.score.governance import create_writer_by_args, create_reader_by_args
 from governor.utils import print_response
 
 

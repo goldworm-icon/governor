@@ -16,7 +16,7 @@
 
 from typing import Dict
 
-from ..governance import create_reader_by_args, create_writer_by_args
+from governor.score.governance import create_reader_by_args, create_writer_by_args
 from ..utils import print_response
 
 

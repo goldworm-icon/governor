@@ -18,7 +18,7 @@ from typing import Dict
 
 import icon
 
-from ..governance import create_client
+from governor.score.governance import create_client
 from ..result_type import (
     GET_DELEGATION,
     GET_PREP,

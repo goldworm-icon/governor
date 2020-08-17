@@ -39,7 +39,7 @@ from .constants import (
     COLUMN,
     PREDEFINED_URLS,
 )
-from .governance import create_client
+from governor.score.governance import create_client
 from .utils import (
     print_title,
     resolve_url,

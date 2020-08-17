@@ -21,13 +21,13 @@ from urllib.parse import urlparse
 
 import icon
 
-from .constants import (
+from governor.constants import (
     COLUMN,
     EOA_ADDRESS,
     GOVERNANCE_ADDRESS,
     ZERO_ADDRESS,
 )
-from .utils import (
+from governor.utils import (
     print_title,
     print_dict,
     resolve_url,
