@@ -1,23 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2019 ICON Foundation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import getpass
 import json
 import pprint
-from typing import TYPE_CHECKING, Union, Optional, Any, Dict, Type
+from typing import TYPE_CHECKING, Union, Optional, Any, Type
 from urllib.parse import urlparse
 
 import icon
@@ -120,9 +106,9 @@ def print_result(object_type: Optional[Type], result: Any):
     pprint.pprint(ret)
 
 
-def confirm_transaction(request: Dict[str, str], yes: bool) -> bool:
+def confirm_transaction(request: icon.RpcRequest, yes: bool) -> bool:
     print_title("Request", COLUMN)
-    print_dict(request)
+    print_dict(request.to_dict())
     print("")
 
     if not yes:
