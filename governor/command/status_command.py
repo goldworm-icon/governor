@@ -43,7 +43,7 @@ def _init_get_status(sub_parser, common_parent_parser):
 
 def _get_status(args) -> int:
     url: str = resolve_url(args.url)
-    filter: str = args.filter
+    _filter: str = args.filter
 
     client: icon.Client = create_client(url)
     result: Dict[str, str] = client.get_status()

@@ -4,6 +4,13 @@ import functools
 from typing import Dict
 
 import icon
+from icon.builder import (
+    CallBuilder,
+    CallTransactionBuilder,
+    Transaction,
+)
+from icon.data import Address, SYSTEM_SCORE_ADDRESS
+from icon.wallet import KeyWallet
 
 from governor.score.governance import create_client
 from ..result_type import (
@@ -44,12 +51,12 @@ def _init_get_stake(sub_parser, common_parent_parser):
 
 def _get_stake(args) -> int:
     url: str = resolve_url(args.url)
-    address = icon.Address.from_string(args.address)
+    address = Address.from_string(args.address)
 
     client: icon.Client = create_client(url)
     params: Dict[str, str] = (
-        icon.CallBuilder()
-        .to(icon.SYSTEM_SCORE_ADDRESS)
+        CallBuilder()
+        .to(SYSTEM_SCORE_ADDRESS)
         .call_data(method="getStake", params={"address": address})
         .build()
     )
@@ -73,14 +80,14 @@ def _init_get_prep(sub_parser, common_parent_parser):
 
 def _get_prep(args) -> int:
     url: str = resolve_url(args.url)
-    address = icon.Address.from_string(args.address)
+    address = Address.from_string(args.address)
 
     client: icon.Client = create_client(url)
     params: Dict[str, str] = (
-        icon.CallBuilder()
-            .to(icon.SYSTEM_SCORE_ADDRESS)
-            .call_data(method="getPRep", params={"address": address})
-            .build()
+        CallBuilder()
+        .to(SYSTEM_SCORE_ADDRESS)
+        .call_data(method="getPRep", params={"address": address})
+        .build()
     )
     result: Dict[str, str] = client.call(params)
     print_result(GET_PREP, result)
@@ -102,14 +109,14 @@ def _init_get_delegation(sub_parser, common_parent_parser):
 
 def _get_delegation(args):
     url: str = resolve_url(args.url)
-    address = icon.Address.from_string(args.address)
+    address = Address.from_string(args.address)
 
     client: icon.Client = create_client(url)
     params: Dict[str, str] = (
-        icon.CallBuilder()
-            .to(icon.SYSTEM_SCORE_ADDRESS)
-            .call_data(method="getDelegation", params={"address": address})
-            .build()
+        CallBuilder()
+        .to(SYSTEM_SCORE_ADDRESS)
+        .call_data(method="getDelegation", params={"address": address})
+        .build()
     )
     result: Dict[str, str] = client.call(params)
     print_result(GET_DELEGATION, result)
@@ -131,12 +138,12 @@ def _init_query_iscore(sub_parser, common_parent_parser):
 
 def _query_iscore(args) -> int:
     url: str = resolve_url(args.url)
-    address = icon.Address.from_string(args.address)
+    address = Address.from_string(args.address)
 
     client: icon.Client = create_client(url)
     params: Dict[str, str] = (
-        icon.CallBuilder()
-        .to(icon.SYSTEM_SCORE_ADDRESS)
+        CallBuilder()
+        .to(SYSTEM_SCORE_ADDRESS)
         .call_data(method="queryIScore", params={"address": address})
         .build()
     )
@@ -163,14 +170,14 @@ def _claim_iscore(args) -> bytes:
     step_limit: int = args.step_limit
     yes: bool = args.yes
     estimate: bool = args.estimate
-    wallet: icon.KeyWallet = resolve_wallet(args)
+    wallet: KeyWallet = resolve_wallet(args)
 
     client: icon.Client = create_client(url)
-    tx: icon.builder.Transaction = (
-        icon.CallTransactionBuilder()
+    tx: Transaction = (
+        CallTransactionBuilder()
         .nid(nid)
         .from_(wallet.address)
-        .to(icon.SYSTEM_SCORE_ADDRESS)
+        .to(SYSTEM_SCORE_ADDRESS)
         .step_limit(step_limit)
         .call_data(method="claimIScore", params=None)
         .build()
@@ -178,8 +185,5 @@ def _claim_iscore(args) -> bytes:
 
     hook = functools.partial(confirm_transaction, yes=yes)
     return client.send_transaction(
-        tx,
-        estimate=estimate,
-        hooks={"request": hook},
-        private_key=wallet.private_key
+        tx, estimate=estimate, hooks={"request": hook}, private_key=wallet.private_key
     )

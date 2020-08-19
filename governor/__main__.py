@@ -22,7 +22,9 @@ import time
 from typing import Union
 
 import icon
+from icon.data import TransactionResult
 
+from governor.score.governance import create_client
 from . import __about__
 from .command import (
     step_command,
@@ -39,7 +41,6 @@ from .constants import (
     COLUMN,
     PREDEFINED_URLS,
 )
-from governor.score.governance import create_client
 from .utils import (
     print_title,
     resolve_url,
@@ -108,7 +109,7 @@ def _print_arguments(args):
     print_title("Arguments", COLUMN)
 
     arguments = {}
-    for name, value in args._get_kwargs():
+    for name, value in vars(args).items():
         if name == "func":
             value = value.__name__
         elif name == "url":
@@ -141,7 +142,7 @@ def _print_tx_result(url: str, tx_hash: bytes) -> int:
 
     for i in range(repeat):
         try:
-            tx_result: icon.TransactionResult = client.get_transaction_result(tx_hash)
+            tx_result: TransactionResult = client.get_transaction_result(tx_hash)
             print(tx_result)
             break
         except:

@@ -15,6 +15,8 @@
 # limitations under the License.
 
 import icon
+from icon.data import Transaction, TransactionResult
+from icon.data import hex_to_bytes
 
 from governor.score.governance import create_client
 from ..utils import print_response, resolve_url
@@ -63,10 +65,10 @@ def _init_tx_result(sub_parser, common_parent_parser):
 
 def _get_tx(args) -> int:
     url: str = resolve_url(args.url)
-    tx_hash: bytes = icon.hex_to_bytes(args.tx_hash)
+    tx_hash: bytes = hex_to_bytes(args.tx_hash)
 
     client: icon.Client = create_client(url)
-    tx: icon.Transaction = client.get_transaction(tx_hash)
+    tx: Transaction = client.get_transaction(tx_hash)
     print_response(f"{tx}")
 
     return 0
@@ -74,10 +76,10 @@ def _get_tx(args) -> int:
 
 def _get_tx_result(args) -> int:
     url: str = resolve_url(args.url)
-    tx_hash: bytes = icon.hex_to_bytes(args.tx_hash)
+    tx_hash: bytes = hex_to_bytes(args.tx_hash)
 
     client: icon.Client = create_client(url)
-    tx_result: icon.TransactionResult = client.get_transaction_result(tx_hash)
+    tx_result: TransactionResult = client.get_transaction_result(tx_hash)
     print_response(f"{tx_result}")
 
     return 0

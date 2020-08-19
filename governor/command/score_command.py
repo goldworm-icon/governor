@@ -16,7 +16,7 @@
 
 from typing import Union, Dict
 
-import icon
+from icon.data import Address
 
 from governor.score.governance import create_writer_by_args, create_reader_by_args
 from governor.utils import print_response
@@ -108,7 +108,7 @@ def _init_for_get_score_status(sub_parser, common_parent_parser):
 
 
 def _get_score_status(args) -> int:
-    address: icon.Address = icon.Address.from_string(args.address)
+    address: Address = Address.from_string(args.address)
 
     reader = create_reader_by_args(args)
     result: Dict[str, str] = reader.get_score_status(address)

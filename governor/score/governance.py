@@ -20,6 +20,10 @@ from typing import Dict, Union, Any, Optional
 from urllib.parse import urlparse
 
 import icon
+from icon.builder import CallBuilder, CallTransactionBuilder, DeployTransactionBuilder
+from icon.data import Address, TransactionResult
+from icon.provider import HTTPProvider
+from icon.wallet import KeyWallet
 
 from governor.constants import (
     COLUMN,
@@ -54,9 +58,7 @@ class GovernanceListener(object):
 
 
 class GovernanceReader(GovernanceListener):
-    def __init__(
-        self, client: icon.Client, nid: int, address: icon.Address = EOA_ADDRESS
-    ):
+    def __init__(self, client: icon.Client, nid: int, address: Address = EOA_ADDRESS):
         super().__init__()
 
         self._client = client
@@ -65,7 +67,7 @@ class GovernanceReader(GovernanceListener):
 
     def _call(self, method, params=None) -> Union[str, Dict[str, str]]:
         params: Dict[str, str] = (
-            icon.CallBuilder()
+            CallBuilder()
             .from_(self._from)
             .to(GOVERNANCE_ADDRESS)
             .call_data(method, params)
@@ -84,7 +86,7 @@ class GovernanceReader(GovernanceListener):
     def get_service_config(self) -> Dict[str, str]:
         return self._call("getServiceConfig")
 
-    def get_score_status(self, address: icon.Address) -> Dict[str, str]:
+    def get_score_status(self, address: Address) -> Dict[str, str]:
         params = {"address": address}
         return self._call("getScoreStatus", params)
 
@@ -99,7 +101,7 @@ class GovernanceReader(GovernanceListener):
         ret: str = self._call(method="getStepPrice")
         return int(ret, base=0)
 
-    def get_tx_result(self, tx_hash: bytes) -> icon.TransactionResult:
+    def get_tx_result(self, tx_hash: bytes) -> TransactionResult:
         return self._client.get_transaction_result(tx_hash)
 
     def get_max_step_limit(self, context_type: str) -> int:
@@ -133,7 +135,7 @@ class GovernanceWriter(GovernanceListener):
         self,
         client: icon.Client,
         nid: int,
-        owner: icon.KeyWallet,
+        owner: KeyWallet,
         step_limit: int,
         estimate: bool,
     ):
@@ -149,7 +151,7 @@ class GovernanceWriter(GovernanceListener):
         self, method: str, params: Dict[str, Any]
     ) -> icon.builder.Transaction:
         return (
-            icon.CallTransactionBuilder()
+            CallTransactionBuilder()
             .nid(self._nid)
             .from_(self._owner.address)
             .to(GOVERNANCE_ADDRESS)
@@ -158,11 +160,13 @@ class GovernanceWriter(GovernanceListener):
             .build()
         )
 
-    def _create_deploy_tx(self, score_path: str, update: bool) -> icon.builder.Transaction:
+    def _create_deploy_tx(
+        self, score_path: str, update: bool
+    ) -> icon.builder.Transaction:
         to = GOVERNANCE_ADDRESS if update else ZERO_ADDRESS
 
         return (
-            icon.DeployTransactionBuilder()
+            DeployTransactionBuilder()
             .nid(self._nid)
             .from_(self._owner.address)
             .to(to)
@@ -195,7 +199,7 @@ class GovernanceWriter(GovernanceListener):
         if not self._estimate:
             tx.sign(self._owner.private_key)
 
-        ret = self._client.send_transaction(tx, self._estimate)
+        ret = self._client.send_transaction(tx, estimate=self._estimate)
 
         logging.debug(f"_send_transaction() end")
         return ret
@@ -357,7 +361,7 @@ class GovernanceWriter(GovernanceListener):
 
         return self._call(method, params)
 
-    def get_tx_result(self, tx_hash: bytes) -> icon.TransactionResult:
+    def get_tx_result(self, tx_hash: bytes) -> TransactionResult:
         tx_result = self._client.get_transaction_result(tx_hash)
         return tx_result
 
@@ -409,13 +413,13 @@ def create_writer(
 ) -> GovernanceWriter:
     client = create_client(url)
 
-    owner_wallet = icon.KeyWallet.load(keystore_path, password)
+    owner_wallet = KeyWallet.load(keystore_path, password)
     return GovernanceWriter(client, nid, owner_wallet, step_limit, estimate)
 
 
 def create_client(url: str) -> icon.Client:
     o = urlparse(url)
-    return icon.Client(icon.HTTPProvider(f"{o.scheme}://{o.netloc}", 3))
+    return icon.Client(HTTPProvider(f"{o.scheme}://{o.netloc}", 3))
 
 
 def _confirm_callback(request: Dict[str, str], yes: bool) -> bool:

@@ -6,7 +6,8 @@ import pprint
 from typing import TYPE_CHECKING, Union, Optional, Any, Type
 from urllib.parse import urlparse
 
-import icon
+from icon.data import str_to_object_by_type, RpcRequest
+from icon.wallet import KeyWallet
 
 from .constants import COLUMN, PREDEFINED_URLS
 
@@ -91,22 +92,22 @@ def resolve_nid(nid: int, url: str) -> int:
     return nid
 
 
-def resolve_wallet(args) -> icon.KeyWallet:
+def resolve_wallet(args) -> KeyWallet:
     path: str = args.keystore
     password: str = args.password
 
     if password is None:
         password = getpass.getpass("> Password: ")
 
-    return icon.KeyWallet.load(path, password)
+    return KeyWallet.load(path, password)
 
 
 def print_result(object_type: Optional[Type], result: Any):
-    ret = icon.str_to_object_by_type(object_type, result)
+    ret = str_to_object_by_type(object_type, result)
     pprint.pprint(ret)
 
 
-def confirm_transaction(request: icon.RpcRequest, yes: bool) -> bool:
+def confirm_transaction(request: RpcRequest, yes: bool) -> bool:
     print_title("Request", COLUMN)
     print_dict(request.to_dict())
     print("")

@@ -1,7 +1,7 @@
 GET_DELEGATION = {
     "totalDelegated": int,
     "votingPower": int,
-    "delegations": [{"value": int}]
+    "delegations": [{"value": int}],
 }
 
 GET_PREP = {
@@ -16,13 +16,7 @@ GET_PREP = {
 
 GET_STAKE = {
     "stake": int,
-    "unstakes": [
-        {
-            "unstake": int,
-            "unstakeBlockHeight": int,
-            "remainingBlocks": int
-        }
-    ],
+    "unstakes": [{"unstake": int, "unstakeBlockHeight": int, "remainingBlocks": int}],
 }
 
 QUERY_ISCORE = {

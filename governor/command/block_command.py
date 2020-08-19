@@ -17,6 +17,7 @@
 from typing import Dict, Optional
 
 import icon
+from icon.data import Block, hex_to_bytes
 
 from governor.score.governance import create_client
 from ..utils import print_response, resolve_url
@@ -93,10 +94,10 @@ def _init_get_block(sub_parser, common_parent_parser):
 
 def _get_block_by_hash(args) -> int:
     url: str = resolve_url(args.url)
-    block_hash: bytes = icon.hex_to_bytes(args.block_hash)
+    block_hash: bytes = hex_to_bytes(args.block_hash)
 
     client: icon.Client = create_client(url)
-    block: icon.Block = client.get_block_by_hash(block_hash)
+    block: Block = client.get_block_by_hash(block_hash)
     print_response(f"{block}")
 
     return 0
@@ -107,7 +108,7 @@ def _get_block_by_height(args) -> int:
     block_height: int = args.block_height
 
     client: icon.Client = create_client(url)
-    block: icon.Block = client.get_block_by_height(block_height)
+    block: Block = client.get_block_by_height(block_height)
     print_response(f"{block}")
 
     return 0
@@ -117,7 +118,7 @@ def _get_last_block(args) -> int:
     url: str = resolve_url(args.url)
 
     client: icon.Client = create_client(url)
-    block: icon.Block = client.get_last_block()
+    block: Block = client.get_last_block()
     print_response(f"{block}")
 
     return 0
@@ -129,7 +130,7 @@ def _get_block(args) -> int:
 
     if isinstance(value, str):
         if value.startswith("0x") and len(value) == 66:
-            value: bytes = icon.hex_to_bytes(value)
+            value: bytes = hex_to_bytes(value)
         else:
             value: int = int(value, 0)
 
