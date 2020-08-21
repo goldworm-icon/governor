@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple, Optional, Callable, Union
 
 import icon
-from icon.builder import CallBuilder, CallTransactionBuilder
-from icon.data import Address, Transaction, SYSTEM_SCORE_ADDRESS
+from icon.builder import CallBuilder, CallTransactionBuilder, Transaction
+from icon.data import Address, SYSTEM_SCORE_ADDRESS
 from icon.wallet import KeyWallet
 
 
@@ -12,10 +12,10 @@ class SystemScore(object):
     def __init__(
         self,
         client: icon.Client,
-        owner: KeyWallet,
-        nid: int,
-        step_limit: int,
-        estimate: bool,
+        owner: KeyWallet = None,
+        nid: int = 0,
+        step_limit: int = 0,
+        estimate: bool = False,
     ):
         self._client = client
         self._owner = owner
@@ -23,22 +23,23 @@ class SystemScore(object):
         self._step_limit = step_limit
         self._estimate = estimate
 
-    def claim_iscore(self) -> bytes:
-        pass
+    def claim_iscore(self, hooks: Dict[str, Callable] = None) -> Union[bytes, int]:
+        tx = self._create_call_tx("claimIScore")
+        return self._client.send_transaction(tx, estimate=self._estimate, hooks=hooks)
 
-    def get_delegation(self, address: Address) -> Dict[str, Any]:
+    def get_delegation(self, address: Address, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
         method = "getDelegation"
         call_params = {"address": address}
         params = self._create_query_call(method, call_params)
-        return self._client.call(params)
+        return self._client.call(params, hooks=hooks)
 
-    def get_prep(self, address: Address) -> Dict[str, str]:
+    def get_prep(self, address: Address, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
         method = "getPRep"
         call_params = {"address": address}
         params = self._create_query_call(method, call_params)
-        return self._client.call(params)
+        return self._client.call(params, hooks=hooks)
 
-    def get_preps(self, start: int, end: int) -> Dict[str, Any]:
+    def get_preps(self, start: int, end: int, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
         method = "getPRep"
 
         call_params = {}
@@ -48,28 +49,41 @@ class SystemScore(object):
             call_params["endRanking"] = end
 
         params = self._create_query_call(method, call_params)
-        return self._client.call(params)
+        return self._client.call(params, hooks=hooks)
 
-    def get_stake(self, address: Address) -> Dict[str, str]:
+    def get_stake(self, address: Address, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
         method = "getStake"
         call_params = {"address": address}
         params = self._create_query_call(method, call_params)
-        return self._client.call(params)
+        return self._client.call(params, hooks=hooks)
 
-    def set_delegation(self, delegations: List[Tuple[Address, int]]) -> bytes:
-        pass
+    def set_delegation(
+        self,
+        delegations: List[Tuple[Address, int]],
+        hooks: Dict[str, Callable] = None
+    ) -> Union[bytes, int]:
+        _delegations = []
+        call_params = {"delegations": _delegations}
 
-    def set_stake(self, stake: int) -> bytes:
-        pass
+        for address, value in delegations:
+            _delegations.append({"address": address, "value": value})
 
-    def query_iscore(self, address: Address) -> Dict[str, str]:
+        tx = self._create_call_tx("setDelegation", call_params)
+        return self._client.send_transaction(tx, estimate=self._estimate, hooks=hooks)
+
+    def set_stake(self, stake: int, hooks: Dict[str, Callable] = None) -> Union[bytes, int]:
+        call_params = {"value": stake}
+        tx = self._create_call_tx("setStake", call_params)
+        return self._client.send_transaction(tx, estimate=self._estimate, hooks=hooks)
+
+    def query_iscore(self, address: Address, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
         method = "queryIScore"
         call_params = {"address": address}
         params = self._create_query_call(method, call_params)
-        return self._client.call(params)
+        return self._client.call(params, hooks=hooks)
 
-    def _create_call_tx(self, method: str, params: Dict[str, Any]) -> Transaction:
-        return (
+    def _create_call_tx(self, method: str, params: Dict[str, Any] = None) -> Transaction:
+        tx = (
             CallTransactionBuilder()
             .nid(self._nid)
             .from_(self._owner.address)
@@ -78,6 +92,11 @@ class SystemScore(object):
             .call_data(method, params)
             .build()
         )
+
+        if not self._estimate:
+            tx.sign(self._owner.private_key)
+
+        return tx
 
     @classmethod
     def _create_query_call(

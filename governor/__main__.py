@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import argparse
-import json
 import logging
 import sys
 import time
@@ -38,12 +37,12 @@ from .command import (
 from .constants import (
     DEFAULT_URL,
     DEFAULT_NID,
-    COLUMN,
     PREDEFINED_URLS,
 )
 from .utils import (
-    print_title,
     resolve_url,
+    print_arguments,
+    print_tx_result,
 )
 
 
@@ -106,8 +105,6 @@ def _init_logger(args):
 
 
 def _print_arguments(args):
-    print_title("Arguments", COLUMN)
-
     arguments = {}
     for name, value in vars(args).items():
         if name == "func":
@@ -116,14 +113,15 @@ def _print_arguments(args):
             value = resolve_url(value)
         arguments[name] = value
 
-    print(f"{json.dumps(arguments, indent=4)}\n")
+    print_arguments(arguments)
 
 
 def _print_result(args, result: Union[int, bytes]) -> int:
     ret = 0
 
-    if isinstance(result, bytes) and not args.no_result:
-        ret = _print_tx_result(args.url, result)
+    if isinstance(result, bytes):
+        if len(result) == 32 and args.no_result:
+            ret = _print_tx_result(args.url, result)
 
     return ret
 
@@ -143,7 +141,7 @@ def _print_tx_result(url: str, tx_hash: bytes) -> int:
     for i in range(repeat):
         try:
             tx_result: TransactionResult = client.get_transaction_result(tx_hash)
-            print(tx_result)
+            print_tx_result(tx_result)
             break
         except:
             if i + 1 == repeat:

@@ -2,11 +2,10 @@
 
 import getpass
 import json
-import pprint
-from typing import TYPE_CHECKING, Union, Optional, Any, Type
+from typing import TYPE_CHECKING, Optional, Any, Dict
 from urllib.parse import urlparse
 
-from icon.data import str_to_object_by_type, RpcRequest
+from icon.data import RpcRequest, TransactionResult
 from icon.wallet import KeyWallet
 
 from .constants import COLUMN, PREDEFINED_URLS
@@ -15,42 +14,17 @@ if TYPE_CHECKING:
     from urllib.parse import ParseResult
 
 
-def hex_to_bytes(tx_hash: str) -> bytes:
-    return bytes.fromhex(tx_hash[2:])
-
-
 def print_title(title: str, column: int = COLUMN, sep: str = "="):
     sep_count: int = max(0, column - len(title) - 3)
     print(f"[{title}] {sep * sep_count}")
 
 
-def print_dict(data: dict):
-    converted = {}
-
-    for key in data:
-        value = data[key]
-        if isinstance(value, bytes):
-            value = f"0x{value.hex()}"
-
-        converted[key] = value
-
-    print(json.dumps(converted, indent=4))
+def print_dict(data: Dict[str, str]):
+    print(json.dumps(data, indent=4))
 
 
-def print_response(content: Union[bool, int, str, dict]):
-    print_title("Response", COLUMN)
-
-    if isinstance(content, dict):
-        print_dict(content)
-    else:
-        print(content)
-
-    print("")
-
-
-def print_tx_result(tx_result: dict):
-    print_title("Transaction Result")
-    print_dict(tx_result)
+def print_tx_result(tx_result: TransactionResult):
+    print_with_title("TransactionResult", tx_result)
 
 
 def is_url_valid(url: str) -> bool:
@@ -102,19 +76,36 @@ def resolve_wallet(args) -> KeyWallet:
     return KeyWallet.load(path, password)
 
 
-def print_result(object_type: Optional[Type], result: Any):
-    ret = str_to_object_by_type(object_type, result)
-    pprint.pprint(ret)
+def print_with_title(title: str, data: Any):
+    if isinstance(data, dict):
+        data = json.dumps(data, indent=4)
+
+    sep_count: int = max(0, 80 - len(title) - 3)
+    title = f"[{title}] {'=' * sep_count}"
+
+    print(f"{title}\n{data}\n")
+
+
+def print_arguments(data: Any):
+    print_with_title("Arguments", data)
+
+
+def print_request(data: Any):
+    print_with_title("Request", data)
+
+
+def print_response(data: Any):
+    print_with_title("Response", data)
+
+
+def print_result(data: Any):
+    print_with_title("Result", data)
 
 
 def confirm_transaction(request: RpcRequest, yes: bool) -> bool:
-    print_title("Request", COLUMN)
-    print_dict(request.to_dict())
-    print("")
+    print_request(request)
+    if yes:
+        return True
 
-    if not yes:
-        ret: str = input("> Continue? [Y/n]")
-        if ret == "n":
-            return False
-
-    return True
+    ret: str = input("> Continue? [Y/n]")
+    return ret.lower() != "n"

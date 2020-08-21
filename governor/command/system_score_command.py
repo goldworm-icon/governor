@@ -1,29 +1,26 @@
 # -*- coding: utf-8 -*-
 
 import functools
-from typing import Dict
+from typing import Dict, Any
 
 import icon
-from icon.builder import (
-    CallBuilder,
-    CallTransactionBuilder,
-    Transaction,
+from icon.data import (
+    Address,
+    RpcResponse,
+    RpcRequest,
+    str_to_object_by_type,
 )
-from icon.data import Address, SYSTEM_SCORE_ADDRESS
 from icon.wallet import KeyWallet
 
-from governor.score.governance import create_client
-from ..result_type import (
-    GET_DELEGATION,
-    GET_PREP,
-    GET_STAKE,
-    QUERY_ISCORE,
-)
+from .. import result_type
+from ..score.governance import create_client
+from ..score.system import SystemScore
 from ..utils import (
     resolve_url,
     resolve_nid,
     resolve_wallet,
     print_result,
+    print_with_title,
     confirm_transaction,
 )
 
@@ -50,18 +47,14 @@ def _init_get_stake(sub_parser, common_parent_parser):
 
 
 def _get_stake(args) -> int:
-    url: str = resolve_url(args.url)
     address = Address.from_string(args.address)
 
-    client: icon.Client = create_client(url)
-    params: Dict[str, str] = (
-        CallBuilder()
-        .to(SYSTEM_SCORE_ADDRESS)
-        .call_data(method="getStake", params={"address": address})
-        .build()
-    )
-    result: Dict[str, str] = client.call(params)
-    print_result(GET_STAKE, result)
+    hooks = {"request": _print_request, "response": _print_response}
+    score = _create_system_score(args, invoke=False)
+    result: Dict[str, str] = score.get_stake(address, hooks=hooks)
+
+    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_STAKE, result)
+    print_result(result)
 
     return 0
 
@@ -79,18 +72,14 @@ def _init_get_prep(sub_parser, common_parent_parser):
 
 
 def _get_prep(args) -> int:
-    url: str = resolve_url(args.url)
     address = Address.from_string(args.address)
 
-    client: icon.Client = create_client(url)
-    params: Dict[str, str] = (
-        CallBuilder()
-        .to(SYSTEM_SCORE_ADDRESS)
-        .call_data(method="getPRep", params={"address": address})
-        .build()
-    )
-    result: Dict[str, str] = client.call(params)
-    print_result(GET_PREP, result)
+    hooks = {"request": _print_request, "response": _print_response}
+    score = _create_system_score(args, invoke=False)
+    result: Dict[str, str] = score.get_prep(address, hooks=hooks)
+
+    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREP, result)
+    print_result(result)
 
     return 0
 
@@ -108,18 +97,14 @@ def _init_get_delegation(sub_parser, common_parent_parser):
 
 
 def _get_delegation(args):
-    url: str = resolve_url(args.url)
     address = Address.from_string(args.address)
 
-    client: icon.Client = create_client(url)
-    params: Dict[str, str] = (
-        CallBuilder()
-        .to(SYSTEM_SCORE_ADDRESS)
-        .call_data(method="getDelegation", params={"address": address})
-        .build()
-    )
-    result: Dict[str, str] = client.call(params)
-    print_result(GET_DELEGATION, result)
+    hooks = {"request": _print_request, "response": _print_response}
+    score = _create_system_score(args, invoke=False)
+    result: Dict[str, str] = score.get_delegation(address, hooks=hooks)
+
+    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_DELEGATION, result)
+    print_result(result)
 
     return 0
 
@@ -137,18 +122,18 @@ def _init_query_iscore(sub_parser, common_parent_parser):
 
 
 def _query_iscore(args) -> int:
-    url: str = resolve_url(args.url)
     address = Address.from_string(args.address)
 
-    client: icon.Client = create_client(url)
-    params: Dict[str, str] = (
-        CallBuilder()
-        .to(SYSTEM_SCORE_ADDRESS)
-        .call_data(method="queryIScore", params={"address": address})
-        .build()
-    )
-    result: Dict[str, str] = client.call(params)
-    print_result(QUERY_ISCORE, result)
+    hooks = {"request": _print_request, "response": _print_response}
+    score = _create_system_score(args, invoke=False)
+    result: Dict[str, str] = score.query_iscore(address, hooks=hooks)
+
+    result: Dict[str, Any] = str_to_object_by_type(result_type.QUERY_ISCORE, result)
+    result["loop"] = result["estimatedICX"]
+    result["icx"] = result["loop"] / 10 ** 18
+    del result["estimatedICX"]
+
+    print_result(result)
 
     return 0
 
@@ -165,25 +150,40 @@ def _init_claim_iscore(sub_parser, common_parent_parser, invoke_parent_parser):
 
 
 def _claim_iscore(args) -> bytes:
+    yes: bool = args.yes
+
+    hooks = {"request": functools.partial(confirm_transaction, yes=yes)}
+    score = _create_system_score(args, invoke=True)
+    return score.claim_iscore(hooks=hooks)
+
+
+def _print_request(request: RpcRequest) -> bool:
+    print_with_title("Request", request)
+    return True
+
+
+def _print_response(response: RpcResponse) -> bool:
+    print_with_title("Response", response)
+    return True
+
+
+def _create_system_score(args, invoke: bool) -> SystemScore:
     url: str = resolve_url(args.url)
     nid: int = resolve_nid(args.nid, args.url)
-    step_limit: int = args.step_limit
-    yes: bool = args.yes
-    estimate: bool = args.estimate
-    wallet: KeyWallet = resolve_wallet(args)
 
     client: icon.Client = create_client(url)
-    tx: Transaction = (
-        CallTransactionBuilder()
-        .nid(nid)
-        .from_(wallet.address)
-        .to(SYSTEM_SCORE_ADDRESS)
-        .step_limit(step_limit)
-        .call_data(method="claimIScore", params=None)
-        .build()
-    )
 
-    hook = functools.partial(confirm_transaction, yes=yes)
-    return client.send_transaction(
-        tx, estimate=estimate, hooks={"request": hook}, private_key=wallet.private_key
-    )
+    if invoke:
+        step_limit: int = args.step_limit
+        estimate: bool = args.estimate
+        wallet: KeyWallet = resolve_wallet(args)
+
+        return SystemScore(
+            client=client,
+            owner=wallet,
+            nid=nid,
+            step_limit=step_limit,
+            estimate=estimate
+        )
+    else:
+        return SystemScore(client)
