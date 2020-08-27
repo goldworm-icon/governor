@@ -31,7 +31,7 @@ def init(sub_parser, common_parent_parser, _invoke_parent_parser):
 
 
 def _init_block_by_hash(sub_parser, common_parent_parser):
-    name = "blockbyhash"
+    name = "getBlockByHash"
     desc = "getBlockByHash command"
 
     score_parser = sub_parser.add_parser(
@@ -49,7 +49,7 @@ def _init_block_by_hash(sub_parser, common_parent_parser):
 
 
 def _init_block_by_height(sub_parser, common_parent_parser):
-    name = "blockbyheight"
+    name = "getBlockByHeight"
     desc = "getBlockByHeight command"
 
     score_parser = sub_parser.add_parser(
@@ -67,7 +67,7 @@ def _init_block_by_height(sub_parser, common_parent_parser):
 
 
 def _init_last_block(sub_parser, common_parent_parser):
-    name = "lastblock"
+    name = "lastBlock"
     desc = "getLastBlock command"
 
     score_parser = sub_parser.add_parser(
@@ -78,7 +78,7 @@ def _init_last_block(sub_parser, common_parent_parser):
 
 
 def _init_get_block(sub_parser, common_parent_parser):
-    name = "getblock"
+    name = "getBlock"
     desc = "icx_getBlock command"
 
     score_parser = sub_parser.add_parser(

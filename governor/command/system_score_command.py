@@ -35,7 +35,7 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
 
 
 def _init_get_stake(sub_parser, common_parent_parser):
-    name = "getstake"
+    name = "getStake"
     desc = "getStake command of system score"
 
     score_parser = sub_parser.add_parser(
@@ -60,7 +60,7 @@ def _get_stake(args) -> int:
 
 
 def _init_get_prep(sub_parser, common_parent_parser):
-    name = "getprep"
+    name = "getPRep"
     desc = "getPRep command of system score"
 
     score_parser = sub_parser.add_parser(
@@ -85,7 +85,7 @@ def _get_prep(args) -> int:
 
 
 def _init_get_delegation(sub_parser, common_parent_parser):
-    name = "getdelegation"
+    name = "getDelegation"
     desc = "getDelegation command of system score"
 
     score_parser = sub_parser.add_parser(
@@ -110,7 +110,7 @@ def _get_delegation(args):
 
 
 def _init_query_iscore(sub_parser, common_parent_parser):
-    name = "queryiscore"
+    name = "queryIScore"
     desc = "queryIScore command of system score"
 
     score_parser = sub_parser.add_parser(
@@ -139,8 +139,8 @@ def _query_iscore(args) -> int:
 
 
 def _init_claim_iscore(sub_parser, common_parent_parser, invoke_parent_parser):
-    name = "claimiscore"
-    desc = "claimIScore command provided by system score"
+    name = "claimIScore"
+    desc = "claimIScore command of system score"
 
     score_parser = sub_parser.add_parser(
         name, parents=[common_parent_parser, invoke_parent_parser], help=desc

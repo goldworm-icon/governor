@@ -22,6 +22,7 @@ from typing import Union
 
 import icon
 from icon.data import TransactionResult
+from icon.data.address import SYSTEM_SCORE_ADDRESS, GOVERNANCE_SCORE_ADDRESS
 
 from governor.score.governance import create_client
 from . import __about__
@@ -154,12 +155,32 @@ def _print_tx_result(url: str, tx_hash: bytes) -> int:
 
 
 def _get_epilog() -> str:
+    urls = _get_predefined_urls()
+    addresses = _get_predefined_addresses()
+    return f"{urls}\n\n{addresses}"
+
+
+def _get_predefined_urls():
     words = ["predefined urls:"]
 
     for key, value in PREDEFINED_URLS.items():
         url, nid = value
         key = f"{key}({nid})"
-        words.append(f"{key:15s}: {url}")
+        words.append(f"{key:15}: {url}")
+
+    return "\n".join(words)
+
+
+def _get_predefined_addresses():
+    scores = {
+        "system": SYSTEM_SCORE_ADDRESS,
+        "governance": GOVERNANCE_SCORE_ADDRESS,
+    }
+
+    words = ["predefined addresses:"]
+
+    for k in scores:
+        words.append(f"{k.rjust(10)}: {scores[k]}")
 
     return "\n".join(words)
 

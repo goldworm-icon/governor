@@ -27,7 +27,7 @@ def init(sub_parser, common_parent_parser, _invoke_parent_parser):
 
 
 def _init_get_status(sub_parser, common_parent_parser):
-    name = "getstatus"
+    name = "getStatus"
     desc = "ise_getStatus command"
 
     score_parser = sub_parser.add_parser(
