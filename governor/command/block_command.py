@@ -60,7 +60,7 @@ def _init_block_by_height(sub_parser, common_parent_parser):
         "block_height",
         type=int,
         nargs="?",
-        help="blockHeight ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
+        help="blockHeight ex) 1234"
     )
 
     score_parser.set_defaults(func=_get_block_by_height)
