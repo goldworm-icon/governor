@@ -17,6 +17,7 @@
 from typing import Dict
 
 import icon
+from icon.data import Address
 
 from governor.score.governance import create_client
 from ..utils import print_response, resolve_url
@@ -24,6 +25,7 @@ from ..utils import print_response, resolve_url
 
 def init(sub_parser, common_parent_parser, _invoke_parent_parser):
     _init_get_status(sub_parser, common_parent_parser)
+    _init_get_balance(sub_parser, common_parent_parser)
 
 
 def _init_get_status(sub_parser, common_parent_parser):
@@ -48,5 +50,31 @@ def _get_status(args) -> int:
     client: icon.Client = create_client(url)
     result: Dict[str, str] = client.get_status()
     print_response(f"{result}")
+
+    return 0
+
+
+def _init_get_balance(sub_parser, common_parent_parser):
+    name = "getBalance"
+    desc = "icx_getBalance"
+
+    score_parser = sub_parser.add_parser(
+        name, parents=[common_parent_parser], help=desc
+    )
+
+    score_parser.add_argument(
+        "address", type=str, nargs="?", help="address"
+    )
+
+    score_parser.set_defaults(func=_get_balance)
+
+
+def _get_balance(args) -> int:
+    url: str = resolve_url(args.url)
+    address: Address = args.address
+
+    client: icon.Client = create_client(url)
+    balance: int = client.get_balance(address)
+    print(f"Balance: {balance}, {hex(balance)}")
 
     return 0

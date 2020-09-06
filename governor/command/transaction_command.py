@@ -69,7 +69,7 @@ def _get_tx(args) -> int:
 
     client: icon.Client = create_client(url)
     tx: Transaction = client.get_transaction(tx_hash)
-    print_response(f"{tx}")
+    print_response(str(tx))
 
     return 0
 
