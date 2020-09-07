@@ -5,8 +5,9 @@ import json
 from typing import TYPE_CHECKING, Optional, Any, Dict
 from urllib.parse import urlparse
 
-from icon.data import RpcRequest, TransactionResult
-from icon.wallet import KeyWallet
+from icon.data import RpcRequest, TransactionResult, Address
+from icon.wallet import KeyWallet, LightWallet
+from neotermcolor import colored
 
 from .constants import COLUMN, PREDEFINED_URLS
 
@@ -28,7 +29,7 @@ def print_tx_result(tx_result: TransactionResult):
 
 
 def is_url_valid(url: str) -> bool:
-    ps: "ParseResult" = urlparse(url)
+    ps: ParseResult = urlparse(url)
 
     return ps.scheme in ("http", "https") and len(ps.netloc) > 0 and len(ps.path) > 0
 
@@ -82,6 +83,7 @@ def print_with_title(title: str, data: Any):
 
     sep_count: int = max(0, 80 - len(title) - 3)
     title = f"[{title}] {'=' * sep_count}"
+    title = colored(title, "green", attrs=["bold"])
 
     print(f"{title}\n{data}\n")
 
@@ -109,3 +111,13 @@ def confirm_transaction(request: RpcRequest, yes: bool) -> bool:
 
     ret: str = input("> Continue? [Y/n]")
     return ret.lower() != "n"
+
+
+def get_address_from_args(args) -> Optional[Address]:
+    if hasattr(args, "address") and isinstance(args.address, str):
+        return Address.from_string(args.address)
+    elif hasattr(args, "keystore") and isinstance(args.keystore, str):
+        wallet = LightWallet.from_path(args.keystore)
+        return wallet.address
+
+    return None

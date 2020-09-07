@@ -17,10 +17,20 @@
 from typing import Dict
 
 import icon
-from icon.data import Address
+from icon.data import Address, RpcRequest, RpcResponse
 
 from governor.score.governance import create_client
-from ..utils import print_response, resolve_url
+from ..utils import print_response, resolve_url, print_result, print_with_title, get_address_from_args
+
+
+def _print_request(request: RpcRequest) -> bool:
+    print_with_title("Request", request)
+    return True
+
+
+def _print_response(response: RpcResponse) -> bool:
+    print_with_title("Response", response)
+    return True
 
 
 def init(sub_parser, common_parent_parser, _invoke_parent_parser):
@@ -58,23 +68,30 @@ def _init_get_balance(sub_parser, common_parent_parser):
     name = "getBalance"
     desc = "icx_getBalance"
 
-    score_parser = sub_parser.add_parser(
+    parser = sub_parser.add_parser(
         name, parents=[common_parent_parser], help=desc
     )
 
-    score_parser.add_argument(
-        "address", type=str, nargs="?", help="address"
+    parser.add_argument(
+        "address", type=str, nargs="?", default=None, help="address"
+    )
+    parser.add_argument(
+        "--keystore", "-k", type=str, required=False, help="keystore file path"
     )
 
-    score_parser.set_defaults(func=_get_balance)
+    parser.set_defaults(func=_get_balance)
 
 
 def _get_balance(args) -> int:
     url: str = resolve_url(args.url)
-    address: Address = args.address
+    address: Address = get_address_from_args(args)
 
-    client: icon.Client = create_client(url)
-    balance: int = client.get_balance(address)
-    print(f"Balance: {balance}, {hex(balance)}")
+    if address:
+        hooks = {"request": _print_request, "response": _print_response}
+        client: icon.Client = create_client(url)
+        balance: int = client.get_balance(address, hooks=hooks)
+        print_result(f"Balance: {balance:_}, {hex(balance)}")
+    else:
+        print("Address not defined")
 
     return 0
