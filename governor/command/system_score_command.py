@@ -11,7 +11,6 @@ from icon.data import (
     str_to_object_by_type,
 )
 from icon.wallet import KeyWallet
-
 from .. import result_type
 from ..score.governance import create_client
 from ..score.system import SystemScore
@@ -28,6 +27,7 @@ from ..utils import (
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
     _init_get_stake(sub_parser, common_parent_parser)
     _init_get_prep(sub_parser, common_parent_parser)
+    _init_get_preps(sub_parser, common_parent_parser)
     _init_get_delegation(sub_parser, common_parent_parser)
 
     _init_query_iscore(sub_parser, common_parent_parser)
@@ -79,6 +79,37 @@ def _get_prep(args) -> int:
     result: Dict[str, str] = score.get_prep(address, hooks=hooks)
 
     result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREP, result)
+    print_result(result)
+
+    return 0
+
+
+def _init_get_preps(sub_parser, common_parent_parser):
+    name = "getPReps"
+    desc = "getPReps command of system score"
+
+    score_parser = sub_parser.add_parser(
+        name, parents=[common_parent_parser], help=desc
+    )
+
+    score_parser.add_argument(
+        "--start", type=int, nargs="?", default=0, help="start ranking"
+    )
+    score_parser.add_argument(
+        "--end", type=int, nargs="?", default=0, help="end ranking"
+    )
+    score_parser.set_defaults(func=_get_preps)
+
+
+def _get_preps(args) -> int:
+    start: int = args.start
+    end: int = args.end
+
+    hooks = {"request": _print_request, "response": _print_response}
+    score = _create_system_score(args, invoke=False)
+    result: Dict[str, str] = score.get_preps(start, end, hooks=hooks)
+
+    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
     print_result(result)
 
     return 0

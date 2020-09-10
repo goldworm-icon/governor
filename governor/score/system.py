@@ -40,7 +40,7 @@ class SystemScore(object):
         return self._client.call(params, hooks=hooks)
 
     def get_preps(self, start: int, end: int, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
-        method = "getPRep"
+        method = "getPReps"
 
         call_params = {}
         if start > 0:
