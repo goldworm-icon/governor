@@ -16,10 +16,16 @@
 
 from typing import Union, Dict
 
+import icon
 from icon.data import Address
 
-from governor.score.governance import create_writer_by_args, create_reader_by_args
-from governor.utils import print_response
+from governor.score.governance import (
+    create_writer_by_args,
+    create_reader_by_args,
+    create_client,
+)
+from governor.utils import print_response, print_result
+from ..utils import resolve_url
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -56,6 +62,8 @@ def init(sub_parser, common_parent_parser, invoke_parent_parser):
     _init_for_is_deployer(sub_parser, common_parent_parser)
     _init_for_is_in_score_black_list(sub_parser, common_parent_parser)
     _init_for_is_in_import_white_list(sub_parser, common_parent_parser)
+
+    _init_get_score_api(sub_parser, common_parent_parser)
 
 
 def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -447,5 +455,33 @@ def _is_in_import_white_list(args) -> int:
     reader = create_reader_by_args(args)
     is_in_import_white_list: bool = reader.is_in_import_white_list(import_stmt)
     print_response(f"is_in_import_white_list: {is_in_import_white_list}")
+
+    return 0
+
+
+def _init_get_score_api(sub_parser, common_parent_parser):
+    name = "getScoreApi"
+    desc = f"icx_{name} command"
+
+    score_parser = sub_parser.add_parser(
+        name, parents=[common_parent_parser], help=desc
+    )
+
+    score_parser.add_argument(
+        "address",
+        type=str,
+        help="Contract address to query"
+    )
+
+    score_parser.set_defaults(func=_get_score_api)
+
+
+def _get_score_api(args) -> int:
+    address = Address.from_string(args.address)
+    url: str = resolve_url(args.url)
+
+    client: icon.Client = create_client(url)
+    result: Dict[str, str] = client.get_score_api(address)
+    print_result(result)
 
     return 0

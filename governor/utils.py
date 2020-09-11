@@ -78,7 +78,7 @@ def resolve_wallet(args) -> KeyWallet:
 
 
 def print_with_title(title: str, data: Any):
-    if isinstance(data, dict):
+    if isinstance(data, (dict, list)):
         data = json.dumps(data, indent=4)
 
     sep_count: int = max(0, 80 - len(title) - 3)
