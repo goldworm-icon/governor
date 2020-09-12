@@ -14,7 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from icon.data.address import AddressPrefix, Address
+from icon.data.address import (
+    AddressPrefix,
+    Address,
+    SYSTEM_SCORE_ADDRESS,
+    GOVERNANCE_SCORE_ADDRESS,
+    TREASURY_ADDRESS,
+)
 
 
 EOA_ADDRESS = Address.from_string("hx1234567890123456789012345678901234567890")
@@ -33,4 +39,12 @@ PREDEFINED_URLS = {
     "qanet": ("https://eunsoo.net.solidwallet.io/api/v3", 80),
     "zicon": ("https://zicon.net.solidwallet.io/api/v3", 1),
     "localnet": (DEFAULT_URL, DEFAULT_NID),
+}
+
+PREDEFINED_ADDRESSES = {
+    "system": SYSTEM_SCORE_ADDRESS,
+    "sys": SYSTEM_SCORE_ADDRESS,
+    "governance": GOVERNANCE_SCORE_ADDRESS,
+    "gov": GOVERNANCE_SCORE_ADDRESS,
+    "treasury": TREASURY_ADDRESS,
 }

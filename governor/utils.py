@@ -9,7 +9,7 @@ from icon.data import RpcRequest, TransactionResult, Address
 from icon.wallet import KeyWallet, LightWallet
 from neotermcolor import colored
 
-from .constants import COLUMN, PREDEFINED_URLS
+from .constants import COLUMN, PREDEFINED_URLS, PREDEFINED_ADDRESSES
 
 if TYPE_CHECKING:
     from urllib.parse import ParseResult
@@ -56,6 +56,17 @@ def resolve_url(url: str) -> str:
         raise ValueError(f"Invalid url: {url}")
 
     return url
+
+
+def resolve_address(text: str) -> Address:
+    if text.startswith("hx") or text.startswith("cx"):
+        return Address.from_string(text)
+
+    address: Address = PREDEFINED_ADDRESSES.get(text)
+    if address is None:
+        raise ValueError(f"Invalid address: {text}")
+
+    return address
 
 
 def resolve_nid(nid: int, url: str) -> int:

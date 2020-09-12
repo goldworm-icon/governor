@@ -25,7 +25,7 @@ from governor.score.governance import (
     create_client,
 )
 from governor.utils import print_response, print_result
-from ..utils import resolve_url
+from ..utils import resolve_url, resolve_address
 
 
 def init(sub_parser, common_parent_parser, invoke_parent_parser):
@@ -477,7 +477,7 @@ def _init_get_score_api(sub_parser, common_parent_parser):
 
 
 def _get_score_api(args) -> int:
-    address = Address.from_string(args.address)
+    address: Address = resolve_address(args.address)
     url: str = resolve_url(args.url)
 
     client: icon.Client = create_client(url)
