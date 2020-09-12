@@ -19,8 +19,7 @@ from typing import Dict, Optional
 import icon
 from icon.data import Block, hex_to_bytes
 
-from governor.score.governance import create_client
-from ..utils import print_response, resolve_url
+from ..utils import print_response, resolve_url, create_client
 
 
 def init(sub_parser, common_parent_parser, _invoke_parent_parser):

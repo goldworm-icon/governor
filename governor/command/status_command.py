@@ -19,8 +19,14 @@ from typing import Dict
 import icon
 from icon.data import Address, RpcRequest, RpcResponse
 
-from governor.score.governance import create_client
-from ..utils import print_response, resolve_url, print_result, print_with_title, get_address_from_args
+from ..utils import (
+    get_address_from_args,
+    print_response,
+    print_result,
+    print_with_title,
+    resolve_url,
+    create_client,
+)
 
 
 def _print_request(request: RpcRequest) -> bool:

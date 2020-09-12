@@ -15,7 +15,6 @@
 # limitations under the License.
 
 from icon.data.address import (
-    AddressPrefix,
     Address,
     SYSTEM_SCORE_ADDRESS,
     GOVERNANCE_SCORE_ADDRESS,
@@ -24,8 +23,6 @@ from icon.data.address import (
 
 
 EOA_ADDRESS = Address.from_string("hx1234567890123456789012345678901234567890")
-ZERO_ADDRESS = Address.from_int(AddressPrefix.CONTRACT, 0)
-GOVERNANCE_ADDRESS = Address.from_int(AddressPrefix.CONTRACT, 1)
 
 DEFAULT_URL = "http://127.0.0.1:9000/api/v3"
 DEFAULT_NID = 3

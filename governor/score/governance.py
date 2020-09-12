@@ -17,25 +17,24 @@ import getpass
 import logging
 import os.path
 from typing import Dict, Union, Any, Optional
-from urllib.parse import urlparse
 
 import icon
 from icon.builder import CallBuilder, CallTransactionBuilder, DeployTransactionBuilder
-from icon.data import Address, TransactionResult
-from icon.provider import HTTPProvider
+from icon.data import (
+    Address,
+    GOVERNANCE_SCORE_ADDRESS,
+    SYSTEM_SCORE_ADDRESS,
+    TransactionResult,
+)
 from icon.wallet import KeyWallet
 
-from governor.constants import (
-    COLUMN,
-    EOA_ADDRESS,
-    GOVERNANCE_ADDRESS,
-    ZERO_ADDRESS,
-)
-from governor.utils import (
-    print_title,
+from ..constants import COLUMN, EOA_ADDRESS
+from ..utils import (
+    create_client,
     print_dict,
-    resolve_url,
+    print_title,
     resolve_nid,
+    resolve_url,
 )
 
 
@@ -69,7 +68,7 @@ class GovernanceReader(GovernanceListener):
         params: Dict[str, str] = (
             CallBuilder()
             .from_(self._from)
-            .to(GOVERNANCE_ADDRESS)
+            .to(GOVERNANCE_SCORE_ADDRESS)
             .call_data(method, params)
             .build()
         )
@@ -154,7 +153,7 @@ class GovernanceWriter(GovernanceListener):
             CallTransactionBuilder()
             .nid(self._nid)
             .from_(self._owner.address)
-            .to(GOVERNANCE_ADDRESS)
+            .to(GOVERNANCE_SCORE_ADDRESS)
             .step_limit(self._step_limit)
             .call_data(method, params)
             .build()
@@ -163,7 +162,7 @@ class GovernanceWriter(GovernanceListener):
     def _create_deploy_tx(
         self, score_path: str, update: bool
     ) -> icon.builder.Transaction:
-        to = GOVERNANCE_ADDRESS if update else ZERO_ADDRESS
+        to = GOVERNANCE_SCORE_ADDRESS if update else SYSTEM_SCORE_ADDRESS
 
         return (
             DeployTransactionBuilder()
@@ -415,11 +414,6 @@ def create_writer(
 
     owner_wallet = KeyWallet.load(keystore_path, password)
     return GovernanceWriter(client, nid, owner_wallet, step_limit, estimate)
-
-
-def create_client(url: str) -> icon.Client:
-    o = urlparse(url)
-    return icon.Client(HTTPProvider(f"{o.scheme}://{o.netloc}", 3))
 
 
 def _confirm_callback(request: Dict[str, str], yes: bool) -> bool:

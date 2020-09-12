@@ -18,8 +18,11 @@ import icon
 from icon.data import Transaction, TransactionResult
 from icon.data import hex_to_bytes
 
-from governor.score.governance import create_client
-from ..utils import print_response, resolve_url
+from ..utils import (
+    create_client,
+    print_response,
+    resolve_url,
+)
 
 
 def init(sub_parser, common_parent_parser, _invoke_parent_parser):

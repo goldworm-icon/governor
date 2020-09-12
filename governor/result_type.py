@@ -16,7 +16,7 @@ GET_PREP = {
 
 GET_PREPS = {
     "blockHeight": int,
-    "statrtRanking": int,
+    "startRanking": int,
     "totalDelegated": int,
     "totalStake": int,
     "preps": [

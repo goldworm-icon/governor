@@ -28,7 +28,6 @@ from icon.data.address import (
     TREASURY_ADDRESS,
 )
 
-from governor.score.governance import create_client
 from . import __about__
 from .command import (
     step_command,
@@ -45,6 +44,7 @@ from .constants import (
     PREDEFINED_URLS,
 )
 from .utils import (
+    create_client,
     resolve_url,
     print_arguments,
     print_tx_result,
