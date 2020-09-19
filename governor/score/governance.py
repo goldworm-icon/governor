@@ -30,7 +30,6 @@ from icon.wallet import KeyWallet
 
 from ..constants import COLUMN, EOA_ADDRESS
 from ..utils import (
-    create_client,
     print_dict,
     print_title,
     resolve_nid,
@@ -378,7 +377,7 @@ def create_reader_by_args(args) -> GovernanceReader:
 
 
 def create_reader(url: str, nid: int) -> GovernanceReader:
-    client = create_client(url)
+    client = icon.create_client(url)
     return GovernanceReader(client, nid)
 
 
@@ -410,7 +409,7 @@ def create_writer(
     step_limit: int,
     estimate: bool,
 ) -> GovernanceWriter:
-    client = create_client(url)
+    client = icon.create_client(url)
 
     owner_wallet = KeyWallet.load(keystore_path, password)
     return GovernanceWriter(client, nid, owner_wallet, step_limit, estimate)

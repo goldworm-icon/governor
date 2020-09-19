@@ -25,7 +25,6 @@ from ..utils import (
     print_result,
     print_with_title,
     resolve_url,
-    create_client,
 )
 
 
@@ -63,7 +62,7 @@ def _get_status(args) -> int:
     url: str = resolve_url(args.url)
     _filter: str = args.filter
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     result: Dict[str, str] = client.get_status()
     print_response(f"{result}")
 
@@ -94,7 +93,7 @@ def _get_balance(args) -> int:
 
     if address:
         hooks = {"request": _print_request, "response": _print_response}
-        client: icon.Client = create_client(url)
+        client: icon.Client = icon.create_client(url)
         balance: int = client.get_balance(address, hooks=hooks)
         print_result(f"Balance: {balance:_}, {hex(balance)}")
     else:

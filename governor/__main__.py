@@ -44,7 +44,6 @@ from .constants import (
     PREDEFINED_URLS,
 )
 from .utils import (
-    create_client,
     resolve_url,
     print_arguments,
     print_tx_result,
@@ -140,7 +139,7 @@ def _print_tx_result(url: str, tx_hash: bytes) -> int:
     # Wait to finish the requested transaction on blockchain
     time.sleep(3)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     repeat = 3
 
     for i in range(repeat):

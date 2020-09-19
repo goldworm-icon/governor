@@ -5,9 +5,7 @@ import json
 from typing import TYPE_CHECKING, Optional, Any, Dict
 from urllib.parse import urlparse
 
-import icon
 from icon.data import RpcRequest, TransactionResult, Address
-from icon.provider import HTTPProvider
 from icon.wallet import KeyWallet, LightWallet
 from neotermcolor import colored
 
@@ -134,8 +132,3 @@ def get_address_from_args(args) -> Optional[Address]:
         return wallet.address
 
     return None
-
-
-def create_client(url: str) -> icon.Client:
-    o = urlparse(url)
-    return icon.Client(HTTPProvider(f"{o.scheme}://{o.netloc}", 3))

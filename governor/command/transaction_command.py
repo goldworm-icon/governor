@@ -19,7 +19,6 @@ from icon.data import Transaction, TransactionResult
 from icon.data import hex_to_bytes
 
 from ..utils import (
-    create_client,
     print_response,
     resolve_url,
 )
@@ -70,7 +69,7 @@ def _get_tx(args) -> int:
     url: str = resolve_url(args.url)
     tx_hash: bytes = hex_to_bytes(args.tx_hash)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     tx: Transaction = client.get_transaction(tx_hash)
     print_response(str(tx))
 
@@ -81,7 +80,7 @@ def _get_tx_result(args) -> int:
     url: str = resolve_url(args.url)
     tx_hash: bytes = hex_to_bytes(args.tx_hash)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     tx_result: TransactionResult = client.get_transaction_result(tx_hash)
     print_response(f"{tx_result}")
 

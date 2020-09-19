@@ -10,7 +10,6 @@ from ..score.governance import (
     create_reader_by_args,
 )
 from ..utils import (
-    create_client,
     print_response,
     print_result,
     resolve_address,
@@ -470,7 +469,7 @@ def _get_score_api(args) -> int:
     address: Address = resolve_address(args.address)
     url: str = resolve_url(args.url)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     result: Dict[str, str] = client.get_score_api(address)
     print_result(result)
 

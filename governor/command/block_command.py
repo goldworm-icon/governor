@@ -19,7 +19,7 @@ from typing import Dict, Optional
 import icon
 from icon.data import Block, hex_to_bytes
 
-from ..utils import print_response, resolve_url, create_client
+from ..utils import print_response, resolve_url
 
 
 def init(sub_parser, common_parent_parser, _invoke_parent_parser):
@@ -95,7 +95,7 @@ def _get_block_by_hash(args) -> int:
     url: str = resolve_url(args.url)
     block_hash: bytes = hex_to_bytes(args.block_hash)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     block: Block = client.get_block_by_hash(block_hash)
     print_response(f"{block}")
 
@@ -106,7 +106,7 @@ def _get_block_by_height(args) -> int:
     url: str = resolve_url(args.url)
     block_height: int = args.block_height
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     block: Block = client.get_block_by_height(block_height)
     print_response(f"{block}")
 
@@ -116,7 +116,7 @@ def _get_block_by_height(args) -> int:
 def _get_last_block(args) -> int:
     url: str = resolve_url(args.url)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     block: Block = client.get_last_block()
     print_response(f"{block}")
 
@@ -133,7 +133,7 @@ def _get_block(args) -> int:
         else:
             value: int = int(value, 0)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
     result: Dict[str, str] = client.get_block(value)
     print_response(f"{result}")
 

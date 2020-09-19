@@ -16,7 +16,6 @@ from .. import result_type
 from ..score.system import SystemScore
 from ..utils import (
     confirm_transaction,
-    create_client,
     print_result,
     print_with_title,
     resolve_nid,
@@ -203,7 +202,7 @@ def _create_system_score(args, invoke: bool) -> SystemScore:
     url: str = resolve_url(args.url)
     nid: int = resolve_nid(args.nid, args.url)
 
-    client: icon.Client = create_client(url)
+    client: icon.Client = icon.create_client(url)
 
     if invoke:
         step_limit: int = args.step_limit
