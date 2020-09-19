@@ -29,13 +29,12 @@ from icon.data.address import (
 )
 
 from . import __about__
+from .command import *
 from .command import (
     step_command,
     revision_command,
     score_command,
     transaction_command,
-    block_command,
-    status_command,
     system_score_command,
 )
 from .constants import (
@@ -51,13 +50,19 @@ from .utils import (
 
 
 def main() -> int:
+    commands = [
+        AccountCommand(),
+        BalanceCommand(),
+        BlockCommand(),
+        StatusCommand(),
+    ]
+    commands.sort(key=lambda x: x.name)
+
     handlers = (
         score_command.init,
         step_command.init,
         revision_command.init,
         transaction_command.init,
-        block_command.init,
-        status_command.init,
         system_score_command.init,
     )
 
@@ -72,6 +77,8 @@ def main() -> int:
     common_parent_parser = create_common_parser()
     invoke_parent_parser = create_invoke_parser()
 
+    for command in commands:
+        command.init(sub_parser, common_parent_parser, invoke_parent_parser)
     for handler in handlers:
         handler(sub_parser, common_parent_parser, invoke_parent_parser)
 

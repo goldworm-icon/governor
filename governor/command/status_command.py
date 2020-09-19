@@ -14,89 +14,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
+from typing import Dict, Any
 
 import icon
-from icon.data import Address, RpcRequest, RpcResponse
+from icon.data.utils import str_to_object_by_type
 
+from .command import Command
+from .. import result_type
 from ..utils import (
-    get_address_from_args,
+    print_request,
     print_response,
     print_result,
-    print_with_title,
     resolve_url,
 )
 
 
-def _print_request(request: RpcRequest) -> bool:
-    print_with_title("Request", request)
-    return True
+class StatusCommand(Command):
+    def __init__(self):
+        self._name = "status"
+        self._hooks = {"request": print_request, "response": print_response}
 
+    @property
+    def name(self) -> str:
+        return self._name
 
-def _print_response(response: RpcResponse) -> bool:
-    print_with_title("Response", response)
-    return True
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "ise_getStatus command"
 
+        score_parser = sub_parser.add_parser(
+            self._name, parents=[common_parent_parser], help=desc
+        )
 
-def init(sub_parser, common_parent_parser, _invoke_parent_parser):
-    _init_get_status(sub_parser, common_parent_parser)
-    _init_get_balance(sub_parser, common_parent_parser)
+        score_parser.add_argument(
+            "filter", type=str, nargs="?", help="filter ex) lastblock"
+        )
 
+        score_parser.set_defaults(func=self._run)
 
-def _init_get_status(sub_parser, common_parent_parser):
-    name = "getStatus"
-    desc = "ise_getStatus command"
+    def _run(self, args) -> int:
+        url: str = resolve_url(args.url)
+        _filter: str = args.filter
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
-
-    score_parser.add_argument(
-        "filter", type=str, nargs="?", help="filter ex) lastblock"
-    )
-
-    score_parser.set_defaults(func=_get_status)
-
-
-def _get_status(args) -> int:
-    url: str = resolve_url(args.url)
-    _filter: str = args.filter
-
-    client: icon.Client = icon.create_client(url)
-    result: Dict[str, str] = client.get_status()
-    print_response(f"{result}")
-
-    return 0
-
-
-def _init_get_balance(sub_parser, common_parent_parser):
-    name = "getBalance"
-    desc = "icx_getBalance"
-
-    parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
-
-    parser.add_argument(
-        "address", type=str, nargs="?", default=None, help="address"
-    )
-    parser.add_argument(
-        "--keystore", "-k", type=str, required=False, help="keystore file path"
-    )
-
-    parser.set_defaults(func=_get_balance)
-
-
-def _get_balance(args) -> int:
-    url: str = resolve_url(args.url)
-    address: Address = get_address_from_args(args)
-
-    if address:
-        hooks = {"request": _print_request, "response": _print_response}
         client: icon.Client = icon.create_client(url)
-        balance: int = client.get_balance(address, hooks=hooks)
-        print_result(f"Balance: {balance:_}, {hex(balance)}")
-    else:
-        print("Address not defined")
+        result: Dict[str, str] = client.get_status(hooks=self._hooks)
+        result: Dict[str, Any] = str_to_object_by_type(result_type.STATUS, result)
+        print_result(result)
 
-    return 0
+        return 0

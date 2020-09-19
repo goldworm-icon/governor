@@ -48,3 +48,10 @@ QUERY_ISCORE = {
     "estimatedICX": int,
     "iscore": int,
 }
+
+STATUS = {
+    "lastBlock": {
+        "blockHeight": int,
+        "timestamp": int,
+    }
+}
