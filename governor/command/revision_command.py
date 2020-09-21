@@ -14,77 +14,97 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = ("RevisionCommand", "VersionCommand", "SetRevisionCommand")
+
 from typing import Dict
 
+from .command import Command
 from ..score.governance import create_writer_by_args, create_reader_by_args
-from ..utils import print_response
+from ..utils import (
+    print_result,
+)
 
 
-def init(sub_parser, common_parent_parser, invoke_parent_parser):
-    _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parser)
-    _init_for_get_revision(sub_parser, common_parent_parser)
-    _init_for_get_version(sub_parser, common_parent_parser)
+class RevisionCommand(Command):
+    def __init__(self):
+        self._name = "revision"
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"getRevision command of governance score"
+
+        score_parser = sub_parser.add_parser(
+            self._name, parents=[common_parent_parser], help=desc
+        )
+
+        score_parser.set_defaults(func=self._run)
+
+    @classmethod
+    def _run(cls, args) -> int:
+        reader = create_reader_by_args(args)
+        revision: Dict[str, str] = reader.get_revision()
+        print_result(revision)
+
+        return 0
 
 
-def _init_for_set_revision(sub_parser, common_parent_parser, invoke_parent_parser):
-    name = "setRevision"
-    desc = f"{name} command"
+class VersionCommand(Command):
+    def __init__(self):
+        self._name = "version"
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
-    )
+    @property
+    def name(self) -> str:
+        return self._name
 
-    score_parser.add_argument(
-        "revision", type=int, nargs="?", default=-1, help="revision ex) 3"
-    )
-    score_parser.add_argument(
-        "name", type=str, nargs="?", default="", help="iconservice version ex) 1.2.3"
-    )
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"getVersion command of governance score"
 
-    score_parser.set_defaults(func=_set_revision)
+        score_parser = sub_parser.add_parser(
+            self._name, parents=[common_parent_parser], help=desc
+        )
 
+        score_parser.set_defaults(func=self._run)
 
-def _set_revision(args) -> bytes:
-    revision: int = args.revision
-    name: str = args.name
+    @classmethod
+    def _run(cls, args) -> int:
+        reader = create_reader_by_args(args)
+        version: str = reader.get_version()
+        print_result(version)
 
-    writer = create_writer_by_args(args)
-    return writer.set_revision(revision, name)
-
-
-def _init_for_get_revision(sub_parser, common_parent_parser):
-    name = "getRevision"
-    desc = f"{name} command"
-
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
-
-    score_parser.set_defaults(func=_get_revision)
+        return 0
 
 
-def _get_revision(args) -> int:
-    reader = create_reader_by_args(args)
-    revision: Dict[str, str] = reader.get_revision()
-    print_response(revision)
+class SetRevisionCommand(Command):
+    def __init__(self):
+        self._name = "setRevision"
 
-    return 0
+    @property
+    def name(self) -> str:
+        return self._name
 
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"{self._name} command of governance score"
 
-def _init_for_get_version(sub_parser, common_parent_parser):
-    name = "getVersion"
-    desc = f"{name} command"
+        score_parser = sub_parser.add_parser(
+            self._name, parents=[common_parent_parser, invoke_parent_parser], help=desc
+        )
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
+        score_parser.add_argument(
+            "revision", type=int, nargs="?", default=-1, help="revision ex) 3"
+        )
+        score_parser.add_argument(
+            "name", type=str, nargs="?", default="", help="iconservice version ex) 1.2.3"
+        )
 
-    score_parser.set_defaults(func=_get_version)
+        score_parser.set_defaults(func=self._run)
 
+    @classmethod
+    def _run(cls, args) -> bytes:
+        revision: int = args.revision
+        name: str = args.name
 
-def _get_version(args) -> int:
-    reader = create_reader_by_args(args)
-    version: str = reader.get_version()
-    print_response(version)
-
-    return 0
+        writer = create_writer_by_args(args)
+        return writer.set_revision(revision, name)

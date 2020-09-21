@@ -32,9 +32,7 @@ from . import __about__
 from .command import *
 from .command import (
     step_command,
-    revision_command,
     score_command,
-    transaction_command,
     system_score_command,
 )
 from .constants import (
@@ -54,15 +52,18 @@ def main() -> int:
         AccountCommand(),
         BalanceCommand(),
         BlockCommand(),
+        RevisionCommand(),
+        SetRevisionCommand(),
         StatusCommand(),
+        TransactionCommand(),
+        TransactionResultCommand(),
+        VersionCommand(),
     ]
     commands.sort(key=lambda x: x.name)
 
     handlers = (
         score_command.init,
         step_command.init,
-        revision_command.init,
-        transaction_command.init,
         system_score_command.init,
     )
 

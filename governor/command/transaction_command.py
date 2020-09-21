@@ -14,74 +14,87 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__all__ = ("TransactionCommand", "TransactionResultCommand")
+
 import icon
 from icon.data import Transaction, TransactionResult
 from icon.data import hex_to_bytes
 
+from .command import Command
 from ..utils import (
     print_response,
+    print_result,
     resolve_url,
 )
 
 
-def init(sub_parser, common_parent_parser, _invoke_parent_parser):
-    _init_tx(sub_parser, common_parent_parser)
-    _init_tx_result(sub_parser, common_parent_parser)
+class TransactionCommand(Command):
+    def __init__(self):
+        self._name = "tx"
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "icx_getTransaction command"
+
+        score_parser = sub_parser.add_parser(
+            self._name, parents=[common_parent_parser], help=desc
+        )
+
+        score_parser.add_argument(
+            "tx_hash",
+            type=str,
+            nargs="?",
+            help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
+        )
+
+        score_parser.set_defaults(func=self._run)
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @classmethod
+    def _run(cls, args) -> int:
+        url: str = resolve_url(args.url)
+        tx_hash: bytes = hex_to_bytes(args.tx_hash)
+
+        client: icon.Client = icon.create_client(url)
+        tx: Transaction = client.get_transaction(tx_hash)
+        print_result(str(tx))
+
+        return 0
 
 
-def _init_tx(sub_parser, common_parent_parser):
-    name = "tx"
-    desc = "getTransaction command"
+class TransactionResultCommand(Command):
+    def __init__(self):
+        self._name = "txresult"
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
+    @property
+    def name(self) -> str:
+        return self._name
 
-    score_parser.add_argument(
-        "tx_hash",
-        type=str,
-        nargs="?",
-        help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
-    )
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "icx_getTransactionResult command"
 
-    score_parser.set_defaults(func=_get_tx)
+        score_parser = sub_parser.add_parser(
+            self._name, parents=[common_parent_parser], help=desc
+        )
 
+        score_parser.add_argument(
+            "tx_hash",
+            type=str,
+            nargs="?",
+            help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
+        )
 
-def _init_tx_result(sub_parser, common_parent_parser):
-    name = "txresult"
-    desc = "getTransactionResult command"
+        score_parser.set_defaults(func=self._run)
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
+    @classmethod
+    def _run(cls, args) -> int:
+        url: str = resolve_url(args.url)
+        tx_hash: bytes = hex_to_bytes(args.tx_hash)
 
-    score_parser.add_argument(
-        "tx_hash",
-        type=str,
-        nargs="?",
-        help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
-    )
+        client: icon.Client = icon.create_client(url)
+        tx_result: TransactionResult = client.get_transaction_result(tx_hash)
+        print_response(f"{tx_result}")
 
-    score_parser.set_defaults(func=_get_tx_result)
-
-
-def _get_tx(args) -> int:
-    url: str = resolve_url(args.url)
-    tx_hash: bytes = hex_to_bytes(args.tx_hash)
-
-    client: icon.Client = icon.create_client(url)
-    tx: Transaction = client.get_transaction(tx_hash)
-    print_response(str(tx))
-
-    return 0
-
-
-def _get_tx_result(args) -> int:
-    url: str = resolve_url(args.url)
-    tx_hash: bytes = hex_to_bytes(args.tx_hash)
-
-    client: icon.Client = icon.create_client(url)
-    tx_result: TransactionResult = client.get_transaction_result(tx_hash)
-    print_response(f"{tx_result}")
-
-    return 0
+        return 0
