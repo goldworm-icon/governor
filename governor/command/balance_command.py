@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from abc import ABC
-
 import icon
 from icon.data import Address
 from icon.data.unit import loop_to_str
@@ -16,15 +14,15 @@ from ..utils import (
 )
 
 
-class BalanceCommand(Command, ABC):
+class BalanceCommand(Command):
     def __init__(self):
-        self._name = "balance"
+        super().__init__(name="balance", readonly=True)
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getBalance"
 
         parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         parser.add_argument(
@@ -35,10 +33,6 @@ class BalanceCommand(Command, ABC):
         )
 
         parser.set_defaults(func=self._run)
-
-    @property
-    def name(self) -> str:
-        return self._name
 
     @classmethod
     def _run(cls, args) -> int:

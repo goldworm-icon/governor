@@ -18,13 +18,13 @@ from ..utils import (
 
 class AccountCommand(Command, ABC):
     def __init__(self):
-        self._name = "account"
+        super().__init__(name="account", readonly=True)
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "debug_getAccount"
 
         parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         parser.add_argument(
@@ -43,10 +43,6 @@ class AccountCommand(Command, ABC):
         )
 
         parser.set_defaults(func=self._run)
-
-    @property
-    def name(self) -> str:
-        return self._name
 
     @classmethod
     def _run(cls, args) -> int:

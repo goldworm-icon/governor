@@ -27,17 +27,13 @@ from ..utils import (
 
 class RevisionCommand(Command):
     def __init__(self):
-        self._name = "revision"
-
-    @property
-    def name(self) -> str:
-        return self._name
+        super().__init__(name="revision", readonly=True)
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = f"getRevision command of governance score"
 
         score_parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         score_parser.set_defaults(func=self._run)
@@ -53,17 +49,13 @@ class RevisionCommand(Command):
 
 class VersionCommand(Command):
     def __init__(self):
-        self._name = "version"
-
-    @property
-    def name(self) -> str:
-        return self._name
+        super().__init__(name="version", readonly=True)
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = f"getVersion command of governance score"
 
         score_parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         score_parser.set_defaults(func=self._run)
@@ -79,17 +71,13 @@ class VersionCommand(Command):
 
 class SetRevisionCommand(Command):
     def __init__(self):
-        self._name = "setRevision"
-
-    @property
-    def name(self) -> str:
-        return self._name
+        super().__init__(name="setRevision", readonly=False)
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
-        desc = f"{self._name} command of governance score"
+        desc = f"{self.name} command of governance score"
 
         score_parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser, invoke_parent_parser], help=desc
+            self.name, parents=[common_parent_parser, invoke_parent_parser], help=desc
         )
 
         score_parser.add_argument(

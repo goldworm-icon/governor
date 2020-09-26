@@ -31,18 +31,14 @@ from ..utils import (
 
 class StatusCommand(Command):
     def __init__(self):
-        self._name = "status"
+        super().__init__(name="status", readonly=True)
         self._hooks = {"request": print_request, "response": print_response}
-
-    @property
-    def name(self) -> str:
-        return self._name
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "ise_getStatus command"
 
         score_parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         score_parser.add_argument(

@@ -49,22 +49,31 @@ from .utils import (
 
 def main() -> int:
     commands = [
+        # Query
         AccountCommand(),
         BalanceCommand(),
         BlockCommand(),
+        DelegationCommand(),
+        IScoreCommand(),
+        PRepCommand(),
+        PRepsCommand(),
         RevisionCommand(),
-        SetRevisionCommand(),
+        StakeCommand(),
         StatusCommand(),
         TransactionCommand(),
         TransactionResultCommand(),
         VersionCommand(),
+
+        # Invoke
+        ClaimIScoreCommand(),
+        SetRevisionCommand(),
+        SetStakeCommand(),
     ]
-    commands.sort(key=lambda x: x.name)
+    commands.sort(key=lambda x: x.key)
 
     handlers = (
         score_command.init,
         step_command.init,
-        system_score_command.init,
     )
 
     parser = argparse.ArgumentParser(

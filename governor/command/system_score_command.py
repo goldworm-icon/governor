@@ -1,201 +1,265 @@
 # -*- coding: utf-8 -*-
 
+__all__ = (
+    "StakeCommand",
+    "SetStakeCommand",
+    "PRepCommand",
+    "PRepsCommand",
+    "DelegationCommand",
+    "IScoreCommand",
+    "ClaimIScoreCommand",
+)
+
 import functools
 from typing import Dict, Any
 
 import icon
 from icon.data import (
     Address,
-    RpcResponse,
-    RpcRequest,
     str_to_object_by_type,
 )
+from icon.data.unit import loop_to_str
 from icon.wallet import KeyWallet
 
+from .command import Command
 from .. import result_type
 from ..score.system import SystemScore
 from ..utils import (
     confirm_transaction,
+    get_address_from_args,
     print_result,
-    print_with_title,
+    print_request,
+    print_response,
     resolve_nid,
     resolve_url,
     resolve_wallet,
 )
 
 
-def init(sub_parser, common_parent_parser, invoke_parent_parser):
-    _init_get_stake(sub_parser, common_parent_parser)
-    _init_get_prep(sub_parser, common_parent_parser)
-    _init_get_preps(sub_parser, common_parent_parser)
-    _init_get_delegation(sub_parser, common_parent_parser)
+class StakeCommand(Command):
+    def __init__(self):
+        super().__init__(name="stake", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
 
-    _init_query_iscore(sub_parser, common_parent_parser)
-    _init_claim_iscore(sub_parser, common_parent_parser, invoke_parent_parser)
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getStake command of system score"
 
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
 
-def _init_get_stake(sub_parser, common_parent_parser):
-    name = "getStake"
-    desc = "getStake command of system score"
+        parser.add_argument("address", type=str, nargs="?", help="address")
+        parser.add_argument(
+            "--keystore", "-k", type=str, required=False, help="keystore file path"
+        )
+        parser.set_defaults(func=self._run)
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
+    def _run(self, args) -> int:
+        address: Address = get_address_from_args(args)
 
-    score_parser.add_argument("address", type=str, nargs="?", help="address")
-    score_parser.set_defaults(func=_get_stake)
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_stake(address, hooks=self._hooks)
+        self._print_result(result)
 
+        return 0
 
-def _get_stake(args) -> int:
-    address = Address.from_string(args.address)
+    @classmethod
+    def _print_result(cls, result: Dict[str, str]):
+        result: Dict[str, Any] = str_to_object_by_type(
+            result_type.GET_STAKE, result
+        )
 
-    hooks = {"request": _print_request, "response": _print_response}
-    score = _create_system_score(args, invoke=False)
-    result: Dict[str, str] = score.get_stake(address, hooks=hooks)
+        result["stake"] = loop_to_str(result["stake"])
 
-    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_STAKE, result)
-    print_result(result)
-
-    return 0
-
-
-def _init_get_prep(sub_parser, common_parent_parser):
-    name = "getPRep"
-    desc = "getPRep command of system score"
-
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
-
-    score_parser.add_argument("address", type=str, nargs="?", help="address")
-    score_parser.set_defaults(func=_get_prep)
+        print_result(result)
 
 
-def _get_prep(args) -> int:
-    address = Address.from_string(args.address)
+class SetStakeCommand(Command):
+    def __init__(self):
+        super().__init__(name="setStake", readonly=False)
+        self._hooks = {"request": print_request, "response": print_response}
 
-    hooks = {"request": _print_request, "response": _print_response}
-    score = _create_system_score(args, invoke=False)
-    result: Dict[str, str] = score.get_prep(address, hooks=hooks)
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "setStake command of system score"
 
-    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREP, result)
-    print_result(result)
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
 
-    return 0
+        parser.add_argument("stake", type=int, help="stake")
+        parser.set_defaults(func=self._run)
 
-
-def _init_get_preps(sub_parser, common_parent_parser):
-    name = "getPReps"
-    desc = "getPReps command of system score"
-
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
-
-    score_parser.add_argument(
-        "--start", type=int, nargs="?", default=0, help="start ranking"
-    )
-    score_parser.add_argument(
-        "--end", type=int, nargs="?", default=0, help="end ranking"
-    )
-    score_parser.set_defaults(func=_get_preps)
+    def _run(self, args) -> bytes:
+        score = _create_system_score(args, invoke=True)
+        return score.set_stake(args.stake, hooks=self._hooks)
 
 
-def _get_preps(args) -> int:
-    start: int = args.start
-    end: int = args.end
+class PRepCommand(Command):
+    def __init__(self):
+        super().__init__(name="prep", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
 
-    hooks = {"request": _print_request, "response": _print_response}
-    score = _create_system_score(args, invoke=False)
-    result: Dict[str, str] = score.get_preps(start, end, hooks=hooks)
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getPRep command of system score"
 
-    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
-    print_result(result)
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
 
-    return 0
+        parser.add_argument("address", type=str, nargs="?", help="address")
+        parser.add_argument(
+            "--keystore", "-k", type=str, required=False, help="keystore file path"
+        )
+        parser.set_defaults(func=self._run)
 
+    def _run(self, args) -> int:
+        address: Address = get_address_from_args(args)
 
-def _init_get_delegation(sub_parser, common_parent_parser):
-    name = "getDelegation"
-    desc = "getDelegation command of system score"
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_prep(address, hooks=self._hooks)
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
+        result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREP, result)
+        print_result(result)
 
-    score_parser.add_argument("address", type=str, nargs="?", help="address")
-    score_parser.set_defaults(func=_get_delegation)
-
-
-def _get_delegation(args):
-    address = Address.from_string(args.address)
-
-    hooks = {"request": _print_request, "response": _print_response}
-    score = _create_system_score(args, invoke=False)
-    result: Dict[str, str] = score.get_delegation(address, hooks=hooks)
-
-    result: Dict[str, Any] = str_to_object_by_type(result_type.GET_DELEGATION, result)
-    print_result(result)
-
-    return 0
+        return 0
 
 
-def _init_query_iscore(sub_parser, common_parent_parser):
-    name = "queryIScore"
-    desc = "queryIScore command of system score"
+class PRepsCommand(Command):
+    def __init__(self):
+        super().__init__(name="preps", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getPReps command of system score"
 
-    score_parser.add_argument("address", type=str, nargs="?", help="address")
-    score_parser.set_defaults(func=_query_iscore)
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
 
+        parser.add_argument(
+            "--start", type=int, nargs="?", default=0, help="start ranking"
+        )
+        parser.add_argument(
+            "--end", type=int, nargs="?", default=0, help="end ranking"
+        )
+        parser.set_defaults(func=self._run)
 
-def _query_iscore(args) -> int:
-    address = Address.from_string(args.address)
+    def _run(self, args) -> int:
+        start: int = args.start
+        end: int = args.end
 
-    hooks = {"request": _print_request, "response": _print_response}
-    score = _create_system_score(args, invoke=False)
-    result: Dict[str, str] = score.query_iscore(address, hooks=hooks)
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_preps(start, end, hooks=self._hooks)
 
-    result: Dict[str, Any] = str_to_object_by_type(result_type.QUERY_ISCORE, result)
-    result["loop"] = result["estimatedICX"]
-    result["icx"] = result["loop"] / 10 ** 18
-    del result["estimatedICX"]
+        result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
+        print_result(result)
 
-    print_result(result)
-
-    return 0
-
-
-def _init_claim_iscore(sub_parser, common_parent_parser, invoke_parent_parser):
-    name = "claimIScore"
-    desc = "claimIScore command of system score"
-
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
-    )
-
-    score_parser.set_defaults(func=_claim_iscore)
+        return 0
 
 
-def _claim_iscore(args) -> bytes:
-    yes: bool = args.yes
+class DelegationCommand(Command):
+    def __init__(self):
+        super().__init__(name="delegation", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
 
-    hooks = {"request": functools.partial(confirm_transaction, yes=yes)}
-    score = _create_system_score(args, invoke=True)
-    return score.claim_iscore(hooks=hooks)
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getDelegation command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.add_argument("address", type=str, nargs="?", help="address")
+        parser.add_argument(
+            "--keystore", "-k", type=str, required=False, help="keystore file path"
+        )
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        address: Address = get_address_from_args(args)
+
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_delegation(address, hooks=self._hooks)
+
+        result: Dict[str, Any] = str_to_object_by_type(
+            result_type.GET_DELEGATION, result
+        )
+        loop: int = result["totalDelegated"]
+        result["totalDelegated"] = loop_to_str(loop)
+
+        print_result(result)
+
+        return 0
 
 
-def _print_request(request: RpcRequest) -> bool:
-    print_with_title("Request", request)
-    return True
+class IScoreCommand(Command):
+    def __init__(self):
+        super().__init__(name="iscore", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "queryIScore command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.add_argument("address", type=str, nargs="?", help="address")
+        parser.add_argument(
+            "--keystore", "-k", type=str, required=False, help="keystore file path"
+        )
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        address: Address = get_address_from_args(args)
+
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.query_iscore(address, hooks=self._hooks)
+        self._print_result(result)
+
+        return 0
+
+    @classmethod
+    def _print_result(cls, result: Dict[str, str]):
+        result: Dict[str, Any] = str_to_object_by_type(
+            result_type.QUERY_ISCORE, result
+        )
+
+        key = "estimatedICX"
+        result[key] = loop_to_str(result[key])
+
+        print_result(result)
 
 
-def _print_response(response: RpcResponse) -> bool:
-    print_with_title("Response", response)
-    return True
+class ClaimIScoreCommand(Command):
+    def __init__(self):
+        super().__init__(name="claimIScore", readonly=False)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "claimIScore command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name,
+            parents=[common_parent_parser, invoke_parent_parser],
+            help=desc
+        )
+
+        parser.set_defaults(func=self._run)
+
+    @classmethod
+    def _run(cls, args) -> bytes:
+        yes: bool = args.yes
+
+        hooks = {
+            "request": [
+                functools.partial(confirm_transaction, yes=yes),
+                print_request,
+            ],
+            "response": print_response,
+        }
+        score = _create_system_score(args, invoke=True)
+        return score.claim_iscore(hooks=hooks)
 
 
 def _create_system_score(args, invoke: bool) -> SystemScore:

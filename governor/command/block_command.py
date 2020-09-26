@@ -17,14 +17,14 @@ from ..utils import (
 
 class BlockCommand(Command):
     def __init__(self):
-        self._name = "block"
+        super().__init__(name="block", readonly=True)
         self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getBlockByHash, icx_getBlockByHeight and icx_lastBlock commands"
 
         score_parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         score_parser.add_argument(
@@ -32,10 +32,6 @@ class BlockCommand(Command):
         )
 
         score_parser.set_defaults(func=self._run)
-
-    @property
-    def name(self) -> str:
-        return self._name
 
     def _run(self, args) -> int:
         url: str = resolve_url(args.url)

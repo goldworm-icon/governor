@@ -30,13 +30,13 @@ from ..utils import (
 
 class TransactionCommand(Command):
     def __init__(self):
-        self._name = "tx"
+        super().__init__(name="tx", readonly=True)
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getTransaction command"
 
         score_parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         score_parser.add_argument(
@@ -47,10 +47,6 @@ class TransactionCommand(Command):
         )
 
         score_parser.set_defaults(func=self._run)
-
-    @property
-    def name(self) -> str:
-        return self._name
 
     @classmethod
     def _run(cls, args) -> int:
@@ -66,24 +62,20 @@ class TransactionCommand(Command):
 
 class TransactionResultCommand(Command):
     def __init__(self):
-        self._name = "txresult"
-
-    @property
-    def name(self) -> str:
-        return self._name
+        super().__init__(name="txresult", readonly=True)
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getTransactionResult command"
 
         score_parser = sub_parser.add_parser(
-            self._name, parents=[common_parent_parser], help=desc
+            self.name, parents=[common_parent_parser], help=desc
         )
 
         score_parser.add_argument(
             "tx_hash",
             type=str,
             nargs="?",
-            help="txHash ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
+            help="ex) 0xe2a8e2483736ba8793bebebc30673aa4fb7662763bcdc7b0d4d8a163a79c9e20",
         )
 
         score_parser.set_defaults(func=self._run)
