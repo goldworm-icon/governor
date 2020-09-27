@@ -14,113 +14,186 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict
+import functools
+from typing import Dict, Union
 
-from ..score.governance import create_reader_by_args, create_writer_by_args
-from ..utils import print_response
+import icon
+from icon.wallet import KeyWallet
 
-
-def init(sub_parser, common_parent_parser, invoke_parent_parser):
-    _init_for_set_step_cost(sub_parser, common_parent_parser, invoke_parent_parser)
-    _init_for_set_step_price(sub_parser, common_parent_parser, invoke_parent_parser)
-    _init_for_set_max_step_limit(sub_parser, common_parent_parser, invoke_parent_parser)
-    _init_for_get_step_costs(sub_parser, common_parent_parser)
-    _init_for_get_step_price(sub_parser, common_parent_parser)
-    _init_for_get_max_step_limit(sub_parser, common_parent_parser)
-
-
-def _init_for_set_step_cost(sub_parser, common_parent_parser, invoke_parent_parser):
-    name = "setStepCost"
-    desc = f"{name} command"
-
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
-    )
-
-    score_parser.add_argument(
-        "step_type",
-        type=str,
-        nargs="?",
-        help="step_type ex) default, apiCall, contractSet, input, eventlog",
-    )
-    score_parser.add_argument(
-        "cost", type=int, nargs="?", default=-1, help="cost ex) 1000"
-    )
-
-    score_parser.set_defaults(func=_set_step_cost)
+from .command import Command
+from ..score.governance import GovernanceScore
+from ..utils import (
+    confirm_transaction,
+    print_request,
+    print_response,
+    resolve_nid,
+    resolve_url,
+    resolve_wallet,
+)
 
 
-def _set_step_cost(args) -> bytes:
-    step_type: str = args.step_type
-    cost: int = args.cost
+class StepCostsCommand(Command):
+    def __init__(self):
+        super().__init__(name="stepCosts", readonly=True)
 
-    writer = create_writer_by_args(args)
-    return writer.set_step_cost(step_type, cost)
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"getStepCosts command of governance score"
 
+        score_parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
 
-def _init_for_set_step_price(sub_parser, common_parent_parser, invoke_parent_parser):
-    name = "setStepPrice"
-    desc = f"{name} command"
+        score_parser.set_defaults(func=self._run)
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
-    )
+    def _run(self, args):
+        hooks = {"request": print_request, "response": print_response}
+        score = _create_governance_score(args, invoke=not self.readonly)
 
-    score_parser.add_argument("step_price", type=int, nargs="?", help="")
+        result: Dict[str, str] = score.get_step_costs(hooks=hooks)
+        step_costs: Dict[str, int] = _convert_hex_to_int(result)
+        print_response(step_costs)
 
-    score_parser.set_defaults(func=_set_step_price)
-
-
-def _set_step_price(args) -> bytes:
-    step_price: int = args.step_price
-
-    writer = create_writer_by_args(args)
-    return writer.set_step_price(step_price)
+        return 0
 
 
-def _init_for_set_max_step_limit(
-    sub_parser, common_parent_parser, invoke_parent_parser
-):
-    name = "setMaxStepLimit"
-    desc = f"{name} command"
+class StepPriceCommand(Command):
+    def __init__(self):
+        super().__init__(name="stepPrice", readonly=True)
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser, invoke_parent_parser], help=desc
-    )
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"getStepPrice command of governance score"
 
-    score_parser.add_argument("context_type", type=str, nargs="?", help="")
-    score_parser.add_argument("value", type=int, nargs="?", default=-1, help="")
+        score_parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
 
-    score_parser.set_defaults(func=_set_max_step_limit)
+        score_parser.set_defaults(func=self._run)
 
+    def _run(self, args) -> int:
+        hooks = {"request": print_request, "response": print_response}
+        score = _create_governance_score(args, invoke=not self.readonly)
 
-def _set_max_step_limit(args) -> bytes:
-    context_type: str = args.context_type
-    value: int = args.value
+        step_price: int = score.get_step_price(hooks=hooks)
+        print_response(f"stepPrice: {step_price:_}, {hex(step_price)}")
 
-    writer = create_writer_by_args(args)
-    return writer.set_max_step_limit(context_type, value)
-
-
-def _init_for_get_step_costs(sub_parser, common_parent_parser):
-    name = "getStepCosts"
-    desc = f"{name} command"
-
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
-
-    score_parser.set_defaults(func=_get_step_costs)
+        return 0
 
 
-def _get_step_costs(args) -> int:
-    reader = create_reader_by_args(args)
-    result: Dict[str, str] = reader.get_step_costs()
-    step_costs: Dict[str, int] = _convert_hex_to_int(result)
+class MaxStepLimitCommand(Command):
+    def __init__(self):
+        super().__init__(name="maxStepLimit", readonly=True)
 
-    print_response(step_costs)
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"getMaxStepLimit command"
 
-    return 0
+        score_parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+        score_parser.add_argument("context_type", type=str, nargs="?", help="")
+        score_parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        # "invoke" or "query"
+        context_type: str = args.context_type
+        score = _create_governance_score(args, invoke=not self.readonly)
+        max_step_limit: int = score.get_max_step_limit(context_type)
+        print_response(f"maxStepLimit: {max_step_limit}")
+
+        return 0
+
+
+class SetStepCostCommand(Command):
+    def __init__(self):
+        super().__init__(name="setStepCost", readonly=False)
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"setStepCost command of governance score"
+
+        score_parser = sub_parser.add_parser(
+            self.name,
+            parents=[common_parent_parser, invoke_parent_parser],
+            help=desc
+        )
+
+        score_parser.add_argument(
+            "step_type",
+            type=str,
+            nargs="?",
+            help="step_type ex) default, apiCall, contractSet, input, eventlog",
+        )
+        score_parser.add_argument(
+            "cost", type=int, nargs="?", default=-1, help="cost ex) 1000"
+        )
+
+        score_parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> Union[bytes, int]:
+        hooks = {
+            "request": functools.partial(confirm_transaction, yes=args.yes),
+            "response": print_response
+        }
+        step_type: str = args.step_type
+        cost: int = args.cost
+
+        score = _create_governance_score(args, invoke=not self.readonly)
+        return score.set_step_cost(step_type, cost, hooks=hooks)
+
+
+class SetStepPriceCommand(Command):
+    def __init__(self):
+        super().__init__(name="setStepPrice", readonly=False)
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"{self.name} command of governance score"
+
+        score_parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser, invoke_parent_parser], help=desc
+        )
+
+        score_parser.add_argument("step_price", type=int, nargs="?", help="")
+
+        score_parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> Union[bytes, int]:
+        hooks = {
+            "request": functools.partial(confirm_transaction, yes=args.yes),
+            "response": print_response
+        }
+
+        step_price: int = args.step_price
+        score = _create_governance_score(args, invoke=not self.readonly)
+        return score.set_step_price(step_price, hooks=hooks)
+
+
+class SetMaxStepLimitCommand(Command):
+    def __init__(self):
+        super().__init__(name="setMaxStepLimit", readonly=False)
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = f"{self.name} command of governance score"
+
+        score_parser = sub_parser.add_parser(
+            self.name,
+            parents=[common_parent_parser, invoke_parent_parser],
+            help=desc
+        )
+
+        score_parser.add_argument("context_type", type=str, nargs="?", help="")
+        score_parser.add_argument("value", type=int, nargs="?", default=-1, help="")
+
+        score_parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> Union[bytes, int]:
+        hooks = {
+            "request": functools.partial(confirm_transaction, yes=args.yes),
+            "response": print_response
+        }
+
+        context_type: str = args.context_type
+        value: int = args.value
+
+        score = _create_governance_score(args, invoke=not self.readonly)
+        return score.set_max_step_limit(context_type, value, hooks=hooks)
 
 
 def _convert_hex_to_int(step_costs: Dict[str, str]) -> Dict[str, int]:
@@ -135,44 +208,23 @@ def _convert_hex_to_int(step_costs: Dict[str, str]) -> Dict[str, int]:
     return ret
 
 
-def _init_for_get_step_price(sub_parser, common_parent_parser):
-    name = "getStepPrice"
-    desc = f"{name} command"
+def _create_governance_score(args, invoke: bool) -> GovernanceScore:
+    url: str = resolve_url(args.url)
+    nid: int = resolve_nid(args.nid, args.url)
 
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
+    client: icon.Client = icon.create_client(url)
 
-    score_parser.set_defaults(func=_get_step_price)
+    if invoke:
+        step_limit: int = args.step_limit
+        estimate: bool = args.estimate
+        wallet: KeyWallet = resolve_wallet(args)
 
-
-def _get_step_price(args) -> int:
-    reader = create_reader_by_args(args)
-    step_price: int = reader.get_step_price()
-
-    print_response(f"stepPrice: {step_price}, {hex(step_price)}")
-
-    return 0
-
-
-def _init_for_get_max_step_limit(sub_parser, common_parent_parser):
-    name = "getMaxStepLimit"
-    desc = f"{name} command"
-
-    score_parser = sub_parser.add_parser(
-        name, parents=[common_parent_parser], help=desc
-    )
-
-    score_parser.add_argument("context_type", type=str, nargs="?", help="")
-
-    score_parser.set_defaults(func=_get_max_step_limit)
-
-
-def _get_max_step_limit(args) -> int:
-    context_type: str = args.context_type
-
-    reader = create_reader_by_args(args)
-    max_step_limit: int = reader.get_max_step_limit(context_type)
-    print_response(f"maxStepLimit: {max_step_limit}")
-
-    return 0
+        return GovernanceScore(
+            client=client,
+            owner=wallet,
+            nid=nid,
+            step_limit=step_limit,
+            estimate=estimate
+        )
+    else:
+        return GovernanceScore(client)

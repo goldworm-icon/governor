@@ -18,9 +18,7 @@ import argparse
 import logging
 import sys
 import time
-from typing import Union
 
-import icon
 from icon.data import TransactionResult
 from icon.data.address import (
     SYSTEM_SCORE_ADDRESS,
@@ -30,11 +28,6 @@ from icon.data.address import (
 
 from . import __about__
 from .command import *
-from .command import (
-    step_command,
-    score_command,
-    system_score_command,
-)
 from .constants import (
     DEFAULT_URL,
     DEFAULT_NID,
@@ -54,27 +47,43 @@ def main() -> int:
         BalanceCommand(),
         BlockCommand(),
         DelegationCommand(),
+        InImportWhiteListCommand(),
+        InScoreBlackListCommand(),
         IScoreCommand(),
+        MaxStepLimitCommand(),
         PRepCommand(),
         PRepsCommand(),
         RevisionCommand(),
+        ScoreApiCommand(),
+        ScoreStatusCommand(),
+        ServiceConfigCommand(),
         StakeCommand(),
         StatusCommand(),
+        StepCostsCommand(),
+        StepPriceCommand(),
         TransactionCommand(),
         TransactionResultCommand(),
+        UpdateServiceConfigCommand(),
         VersionCommand(),
 
         # Invoke
+        AcceptScoreCommand(),
+        AddAuditorCommand(),
+        AddImportWhiteListCommand(),
+        AddToScoreBlackListCommand(),
         ClaimIScoreCommand(),
+        DeployCommand(),
+        RejectScoreCommand(),
+        RemoveAuditorCommand(),
+        RemoveFromScoreBlackListCommand(),
+        RemoveImportWhiteListCommand(),
+        SetMaxStepLimitCommand(),
         SetRevisionCommand(),
         SetStakeCommand(),
+        SetStepCostCommand(),
+        SetStepPriceCommand(),
     ]
     commands.sort(key=lambda x: x.key)
-
-    handlers = (
-        score_command.init,
-        step_command.init,
-    )
 
     parser = argparse.ArgumentParser(
         prog=__about__.name,
@@ -89,8 +98,6 @@ def main() -> int:
 
     for command in commands:
         command.init(sub_parser, common_parent_parser, invoke_parent_parser)
-    for handler in handlers:
-        handler(sub_parser, common_parent_parser, invoke_parent_parser)
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)

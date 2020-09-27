@@ -16,18 +16,29 @@
 
 __all__ = ("RevisionCommand", "VersionCommand", "SetRevisionCommand")
 
+import functools
 from typing import Dict
 
+import icon
+from icon.wallet import KeyWallet
+
 from .command import Command
-from ..score.governance import create_writer_by_args, create_reader_by_args
+from ..score.governance import GovernanceScore
 from ..utils import (
+    confirm_transaction,
+    print_request,
+    print_response,
     print_result,
+    resolve_nid,
+    resolve_url,
+    resolve_wallet,
 )
 
 
 class RevisionCommand(Command):
     def __init__(self):
         super().__init__(name="revision", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = f"getRevision command of governance score"
@@ -38,10 +49,9 @@ class RevisionCommand(Command):
 
         score_parser.set_defaults(func=self._run)
 
-    @classmethod
-    def _run(cls, args) -> int:
-        reader = create_reader_by_args(args)
-        revision: Dict[str, str] = reader.get_revision()
+    def _run(self, args) -> int:
+        score = _create_governance_score(args, invoke=False)
+        revision: Dict[str, str] = score.get_revision(hooks=self._hooks)
         print_result(revision)
 
         return 0
@@ -50,6 +60,7 @@ class RevisionCommand(Command):
 class VersionCommand(Command):
     def __init__(self):
         super().__init__(name="version", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = f"getVersion command of governance score"
@@ -60,10 +71,9 @@ class VersionCommand(Command):
 
         score_parser.set_defaults(func=self._run)
 
-    @classmethod
-    def _run(cls, args) -> int:
-        reader = create_reader_by_args(args)
-        version: str = reader.get_version()
+    def _run(self, args) -> int:
+        score = _create_governance_score(args, invoke=False)
+        version: str = score.get_version(hooks=self._hooks)
         print_result(version)
 
         return 0
@@ -91,8 +101,35 @@ class SetRevisionCommand(Command):
 
     @classmethod
     def _run(cls, args) -> bytes:
+        hooks = {
+            "request": functools.partial(confirm_transaction, yes=args.yes),
+            "response": print_response
+        }
+
         revision: int = args.revision
         name: str = args.name
 
-        writer = create_writer_by_args(args)
-        return writer.set_revision(revision, name)
+        score = _create_governance_score(args, invoke=True)
+        return score.set_revision(revision, name, hooks=hooks)
+
+
+def _create_governance_score(args, invoke: bool) -> GovernanceScore:
+    url: str = resolve_url(args.url)
+    nid: int = resolve_nid(args.nid, args.url)
+
+    client: icon.Client = icon.create_client(url)
+
+    if invoke:
+        step_limit: int = args.step_limit
+        estimate: bool = args.estimate
+        wallet: KeyWallet = resolve_wallet(args)
+
+        return GovernanceScore(
+            client=client,
+            owner=wallet,
+            nid=nid,
+            step_limit=step_limit,
+            estimate=estimate
+        )
+    else:
+        return GovernanceScore(client)

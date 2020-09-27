@@ -126,7 +126,7 @@ def confirm_transaction(request: RpcRequest, yes: bool) -> bool:
 
 def get_address_from_args(args) -> Optional[Address]:
     if hasattr(args, "address") and isinstance(args.address, str):
-        return Address.from_string(args.address)
+        return resolve_address(args.address)
     elif hasattr(args, "keystore") and isinstance(args.keystore, str):
         wallet = LightWallet.from_path(args.keystore)
         return wallet.address
