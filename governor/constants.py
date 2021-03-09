@@ -36,6 +36,7 @@ PREDEFINED_URLS = {
     "qanet": ("https://eunsoo.net.solidwallet.io/api/v3", 80),
     "zicon": ("https://zicon.net.solidwallet.io/api/v3", 1),
     "localnet": (DEFAULT_URL, DEFAULT_NID),
+    "gochain": ("http://localhost:9080/api/v3", 7)
 }
 
 PREDEFINED_ADDRESSES = {
