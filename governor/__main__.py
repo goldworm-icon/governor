@@ -65,6 +65,7 @@ def main() -> int:
         TransactionResultCommand(),
         UpdateServiceConfigCommand(),
         VersionCommand(),
+        WalletCommand(),
 
         # Invoke
         AcceptScoreCommand(),
