@@ -51,6 +51,13 @@ class SystemScore(object):
         params = self._create_query_call(method, call_params)
         return self._client.call(params, hooks=hooks)
 
+    def get_prep_stats(self, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
+        method = "getPRepStats"
+        call_params = {}
+
+        params = self._create_query_call(method, call_params)
+        return self._client.call(params, hooks=hooks)
+
     def get_stake(self, address: Address, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
         method = "getStake"
         call_params = {"address": address}

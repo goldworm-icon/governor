@@ -38,6 +38,25 @@ GET_PREPS = {
     ]
 }
 
+GET_PREP_STATS = {
+    "blockHeight": int,
+    "preps": [
+        {
+            "blockHeight": int,
+            "grade": int,
+            "status": int,
+            "penalties": int,
+            "lastHeight": int,
+            "lastState": int,
+            "total": int,
+            "fail": int,
+            "realTotal": int,
+            "realFail": int,
+            "failCont": int,
+        }
+    ]
+}
+
 GET_STAKE = {
     "stake": int,
     "unstakes": [{"unstake": int, "unstakeBlockHeight": int, "remainingBlocks": int}],

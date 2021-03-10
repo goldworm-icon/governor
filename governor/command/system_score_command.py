@@ -157,6 +157,30 @@ class PRepsCommand(Command):
         return 0
 
 
+class PRepStatsCommand(Command):
+    def __init__(self):
+        super().__init__(name="preps", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getPRepStats command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_prep_stats(hooks=self._hooks)
+
+        result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
+        print_result(result)
+
+        return 0
+
+
 class DelegationCommand(Command):
     def __init__(self):
         super().__init__(name="delegation", readonly=True)
