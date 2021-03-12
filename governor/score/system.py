@@ -51,6 +51,16 @@ class SystemScore(object):
         params = self._create_query_call(method, call_params)
         return self._client.call(params, hooks=hooks)
 
+    def get_main_preps(self, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
+        method = "getMainPReps"
+        params = self._create_query_call(method, {})
+        return self._client.call(params, hooks=hooks)
+
+    def get_sub_preps(self, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
+        method = "getSubPReps"
+        params = self._create_query_call(method, {})
+        return self._client.call(params, hooks=hooks)
+
     def get_prep_stats(self, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
         method = "getPRepStats"
         call_params = {}

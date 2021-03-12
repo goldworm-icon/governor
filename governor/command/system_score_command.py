@@ -5,6 +5,8 @@ __all__ = (
     "SetStakeCommand",
     "PRepCommand",
     "PRepsCommand",
+    "MainPRepsCommand",
+    "SubPRepsCommand",
     "DelegationCommand",
     "IScoreCommand",
     "ClaimIScoreCommand",
@@ -152,6 +154,50 @@ class PRepsCommand(Command):
         result: Dict[str, str] = score.get_preps(start, end, hooks=self._hooks)
 
         result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
+        print_result(result)
+
+        return 0
+
+
+class MainPRepsCommand(Command):
+    def __init__(self):
+        super().__init__(name="mainpreps", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getMainPReps command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_main_preps(hooks=self._hooks)
+        print_result(result)
+
+        return 0
+
+
+class SubPRepsCommand(Command):
+    def __init__(self):
+        super().__init__(name="subpreps", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getSubPReps command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_sub_preps(hooks=self._hooks)
         print_result(result)
 
         return 0
