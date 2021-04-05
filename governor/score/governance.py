@@ -10,6 +10,7 @@ from icon.builder import (
     CallTransactionBuilder,
     DeployTransactionBuilder,
     Transaction,
+    Key
 )
 from icon.data import (
     Address,
@@ -49,7 +50,7 @@ class GovernanceScore(object):
     def _create_call_tx(
             self, method: str, params: Dict[str, Any] = None, **kwargs,
     ) -> Transaction:
-        estimate: bool = kwargs.get("estimate", self._estimate)
+        step_limit: int = kwargs.get("step_limit", self._step_limit)
 
         builder = (
             CallTransactionBuilder()
@@ -59,16 +60,22 @@ class GovernanceScore(object):
             .call_data(method, params)
         )
 
-        if estimate:
+        if step_limit <= 0:
             # Do not add stepLimit to tx if you want to estimate the step of a tx
             tx: Transaction = builder.build()
-        else:
-            step_limit: int = kwargs.get("step_limit", self._step_limit)
-            builder.step_limit(step_limit)
-            tx: Transaction = builder.build()
-            tx.sign(self._owner.private_key)
+            step_limit = self._client.estimate_step(tx, **kwargs)
+
+        builder.step_limit(step_limit)
+        tx: Transaction = builder.build()
+        tx.sign(self._owner.private_key)
 
         return tx
+
+    def _estimate_step(self, tx: icon.builder.Transaction, **kwargs) -> int:
+        _builder = icon.builder.GenericBuilder(tx.to_dict())
+        _builder.remove(Key.SIGNATURE)
+        _builder.remove(Key.STEP_LIMIT)
+        return self._client.estimate_step(tx, **kwargs)
 
     def get_version(self, **kwargs) -> str:
         method = "getVersion"
@@ -140,8 +147,6 @@ class GovernanceScore(object):
         if not os.path.isfile(path):
             raise Exception(f"Invalid score path: {path}")
 
-        estimate: bool = kwargs.get("estimate", self._estimate)
-
         builder = (
             DeployTransactionBuilder()
             .nid(self._nid)
@@ -150,14 +155,14 @@ class GovernanceScore(object):
             .deploy_data_from_path(path, params=None)
         )
 
-        if estimate:
+        step_limit: int = kwargs.get("step_limit", self._step_limit)
+        if step_limit <= 0:
             tx = builder.build()
-        else:
-            step_limit: int = kwargs.get("step_limit", self._step_limit)
-            builder.step_limit(step_limit)
-            tx = builder.build()
-            tx.sign(self._owner.private_key)
+            step_limit = self._client.estimate_step(tx, **kwargs)
 
+        builder.step_limit(step_limit)
+        tx = builder.build()
+        tx.sign(self._owner.private_key)
         ret: bytes = self._client.send_transaction(tx, **kwargs)
 
         logging.debug(f"deploy() end")
@@ -205,6 +210,7 @@ class GovernanceScore(object):
         method = "setStepPrice"
         call_params = {"stepPrice": step_price}
         tx: Transaction = self._create_call_tx(method, call_params, **kwargs)
+
         ret = self._client.send_transaction(tx, **kwargs)
 
         logging.debug(f"set_step_price() end")
