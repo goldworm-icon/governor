@@ -10,10 +10,12 @@ __all__ = (
     "DelegationCommand",
     "IScoreCommand",
     "ClaimIScoreCommand",
+    "BonderListCommand",
+    "SetBonderListCommand",
 )
 
 import functools
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 import icon
 from icon.data import (
@@ -22,7 +24,6 @@ from icon.data import (
 )
 from icon.data.unit import loop_to_str
 from icon.wallet import KeyWallet
-
 from .command import Command
 from .. import result_type
 from ..score.system import SystemScore
@@ -352,3 +353,71 @@ def _create_system_score(args, invoke: bool) -> SystemScore:
         )
     else:
         return SystemScore(client)
+
+
+class BonderListCommand(Command):
+    def __init__(self):
+        super().__init__(name="bonderList", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getBonderList command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.add_argument("address", type=str, nargs="?", help="address")
+        parser.add_argument(
+            "--keystore", "-k", type=str, required=False, help="keystore file path"
+        )
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        address: Address = get_address_from_args(args)
+
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_bonder_list(address, hooks=self._hooks)
+        print_result(result)
+
+        return 0
+
+
+class SetBonderListCommand(Command):
+    def __init__(self):
+        super().__init__(name="setBonderList", readonly=False)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "setBonderList command of system score."
+
+        parser = sub_parser.add_parser(
+            self.name,
+            parents=[common_parent_parser, invoke_parent_parser],
+            help=desc
+        )
+
+        parser.add_argument("addresses", type=str, nargs="?", help="addresses ex) addr1,addr2,...")
+        parser.set_defaults(func=self._run)
+
+    @classmethod
+    def _run(cls, args) -> bytes:
+        yes: bool = args.yes
+        addresses = cls._to_address_list(args.addresses)
+
+        hooks = {
+            "request": [
+                functools.partial(confirm_transaction, yes=yes),
+                print_request,
+            ],
+            "response": print_response,
+        }
+        score = _create_system_score(args, invoke=True)
+        return score.set_bonder_list(addresses, hooks=hooks)
+
+    @classmethod
+    def _to_address_list(cls, addresses: str) -> List[Address]:
+        return [
+            Address.from_string(address)
+            for address in addresses.split(",")
+        ]

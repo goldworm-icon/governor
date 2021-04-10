@@ -99,19 +99,36 @@ class SystemScore(object):
         params = self._create_query_call(method, call_params)
         return self._client.call(params, hooks=hooks)
 
-    def _create_call_tx(self, method: str, params: Dict[str, Any] = None) -> Transaction:
-        tx = (
+    def get_bonder_list(self, address: Address, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
+        method = "getBonderList"
+        call_params = {"address": address}
+        params = self._create_query_call(method, call_params)
+        return self._client.call(params, hooks=hooks)
+
+    def set_bonder_list(self, bonder_list: List[Address], hooks: Dict[str, Callable] = None, **kwargs) -> Union[bytes, int]:
+        call_params = {"bonderList": bonder_list}
+        tx = self._create_call_tx("setBonderList", call_params, hooks=hooks)
+        return self._client.send_transaction(tx, hooks=hooks)
+
+    def _create_call_tx(self, method: str, params: Dict[str, Any] = None, **kwargs) -> Transaction:
+        builder = (
             CallTransactionBuilder()
             .nid(self._nid)
             .from_(self._owner.address)
             .to(SYSTEM_SCORE_ADDRESS)
-            .step_limit(self._step_limit)
             .call_data(method, params)
-            .build()
         )
 
-        if not self._estimate:
-            tx.sign(self._owner.private_key)
+        step_limit: int = self._step_limit
+        print(f"step_limit: {step_limit}")
+        if step_limit <= 0:
+            # Do not add stepLimit to tx if you want to estimate the step of a tx
+            tx: Transaction = builder.build()
+            step_limit = self._client.estimate_step(tx, **kwargs)
+
+        builder.step_limit(step_limit)
+        tx: Transaction = builder.build()
+        tx.sign(self._owner.private_key)
 
         return tx
 

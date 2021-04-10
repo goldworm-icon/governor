@@ -134,6 +134,13 @@ class GovernanceScore(object):
         ret: str = self._client.call(params, **kwargs)
         return bool(int(ret, base=0))
 
+    def is_auditor(self, address: Address, **kwargs) -> bool:
+        method = "isAuditor"
+        call_params = {"importStmt": import_stmt}
+        params: Dict[str, str] = self._create_query_call(method, call_params)
+        ret: str = self._client.call(params, **kwargs)
+        return bool(int(ret, base=0))
+
     # The following is invoke functions
 
     def deploy(self, path: str, **kwargs) -> Union[bytes, int]:
