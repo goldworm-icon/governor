@@ -23,7 +23,7 @@
 # )
 
 from .account_command import AccountCommand
-from .balance_command import BalanceCommand
+from .balance_command import BalanceCommand, TransferCommand
 from .block_command import BlockCommand
 from .governance_score_command import *
 from .revision_command import *

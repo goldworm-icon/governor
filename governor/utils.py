@@ -2,6 +2,7 @@
 
 import getpass
 import json
+import re
 from typing import TYPE_CHECKING, Optional, Any, Dict
 from urllib.parse import urlparse
 
@@ -13,6 +14,10 @@ from .constants import COLUMN, PREDEFINED_URLS, PREDEFINED_ADDRESSES
 
 if TYPE_CHECKING:
     from urllib.parse import ParseResult
+
+
+NUMBER_PATTERN = re.compile("[\d]+")
+EXP_PATTERN = re.compile("[\d]+e[\d]+")
 
 
 def print_title(title: str, column: int = COLUMN, sep: str = "="):
@@ -132,3 +137,20 @@ def get_address_from_args(args) -> Optional[Address]:
         return wallet.address
 
     return None
+
+
+def get_coin_from_string(value: str) -> Optional[int]:
+    m = NUMBER_PATTERN.fullmatch(value)
+    if m:
+        return int(m.group(), 10)
+
+    return exp_to_int(value)
+
+
+def exp_to_int(value: str) -> Optional[int]:
+    m = EXP_PATTERN.fullmatch(value)
+    if m is None:
+        return None
+
+    nums = value.split("e")
+    return int(nums[0], 10) * 10 ** int(nums[1], 10)

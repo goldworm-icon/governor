@@ -87,6 +87,7 @@ def main() -> int:
         SetStakeCommand(),
         SetStepCostCommand(),
         SetStepPriceCommand(),
+        TransferCommand(),
     ]
     commands.sort(key=lambda x: x.key)
 
