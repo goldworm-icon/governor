@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 from typing import Dict, Any, Optional, Union
 
 import icon
 from icon.builder import (
     CallBuilder,
     CallTransactionBuilder,
-    DeployTransactionBuilder,
     Transaction,
     Key
 )
@@ -142,38 +140,6 @@ class GovernanceScore(object):
         return bool(int(ret, base=0))
 
     # The following is invoke functions
-
-    def deploy(self, path: str, **kwargs) -> Union[bytes, int]:
-        """Update governance SCORE
-
-        :return: tx_hash(bytes) or estimated_step(int)
-        """
-        logging.debug(f"deploy() start: path={path}")
-
-        path: str = os.path.join(path, "package.json")
-        if not os.path.isfile(path):
-            raise Exception(f"Invalid score path: {path}")
-
-        builder = (
-            DeployTransactionBuilder()
-            .nid(self._nid)
-            .from_(self._owner.address)
-            .to(self._score_address)
-            .deploy_data_from_path(path, params=None)
-        )
-
-        step_limit: int = kwargs.get("step_limit", self._step_limit)
-        if step_limit <= 0:
-            tx = builder.build()
-            step_limit = self._client.estimate_step(tx, **kwargs)
-
-        builder.step_limit(step_limit)
-        tx = builder.build()
-        tx.sign(self._owner.private_key)
-        ret: bytes = self._client.send_transaction(tx, **kwargs)
-
-        logging.debug(f"deploy() end")
-        return ret
 
     def accept_score(self, tx_hash: bytes, **kwargs) -> Union[bytes, int]:
         method = "acceptScore"
