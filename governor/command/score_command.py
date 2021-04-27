@@ -62,13 +62,13 @@ class DeployCommand(Command):
 
         score_parser.set_defaults(func=self._run)
 
-    @staticmethod
-    def _run(args) -> bytes:
+    @classmethod
+    def _run(cls, args) -> bytes:
         url: str = resolve_url(args.url)
         nid: int = resolve_nid(args.nid, args.url)
         score_path: str = args.score_path
         wallet: KeyWallet = resolve_wallet(args)
-        score_address: Address = args.score_address
+        to: Address = args.to
         step_limit: int = args.step_limit
 
         hooks = {
@@ -82,14 +82,14 @@ class DeployCommand(Command):
 
         params: Optional[Dict[str, Any]] = None
         if isinstance(args.params, str):
-            params = json.loads(args.params)
+            params = cls._get_score_params(args.params)
 
         builder = (
             DeployTransactionBuilder()
             .nid(nid)
             .from_(wallet.address)
-            .to(score_address)
-            .deploy_data_from_path(path, params=params)
+            .to(to)
+            .deploy_data_from_path(score_path, params=params)
         )
 
         client: icon.Client = icon.create_client(url)
@@ -103,3 +103,13 @@ class DeployCommand(Command):
         tx.sign(wallet.private_key)
 
         return client.send_transaction(tx, hooks=hooks)
+
+    @classmethod
+    def _get_score_params(cls, value: str) -> Dict[str, Any]:
+        try:
+            fp = open(value, mode="rt")
+            params = json.load(fp)
+            fp.close()
+            return params
+        except:
+            return json.loads(value)

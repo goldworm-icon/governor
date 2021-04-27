@@ -20,6 +20,13 @@ NUMBER_PATTERN = re.compile("[\d]+")
 EXP_PATTERN = re.compile("[\d]+e[\d]+")
 
 
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Address):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
 def print_title(title: str, column: int = COLUMN, sep: str = "="):
     sep_count: int = max(0, column - len(title) - 3)
     print(f"[{title}] {sep * sep_count}")
@@ -95,7 +102,7 @@ def resolve_wallet(args) -> KeyWallet:
 
 def print_with_title(title: str, data: Any):
     if isinstance(data, (dict, list)):
-        data = json.dumps(data, indent=4)
+        data = json.dumps(data, indent=4, cls=CustomJSONEncoder)
 
     sep_count: int = max(0, 80 - len(title) - 3)
     title = f"[{title}] {'=' * sep_count}"

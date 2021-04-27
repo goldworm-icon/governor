@@ -38,6 +38,7 @@ PREDEFINED_URLS = {
     "localnet": (DEFAULT_URL, DEFAULT_NID),
     "gochain": ("http://localhost:9080/api/v3", 7),
     "sejong": ("https://sejong.net.solidwallet.io/api/v3", 0x53),
+    "hannam": ("https://hannam.net.solidwallet.io/api/v3", 3),
 }
 
 PREDEFINED_ADDRESSES = {

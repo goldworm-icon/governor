@@ -397,7 +397,12 @@ class SetBonderListCommand(Command):
             help=desc
         )
 
-        parser.add_argument("addresses", type=str, nargs="?", help="addresses ex) addr1,addr2,...")
+        parser.add_argument(
+            "addresses",
+            type=str,
+            nargs="?",
+            default="",
+            help="addresses ex) addr1,addr2,...")
         parser.set_defaults(func=self._run)
 
     @classmethod
@@ -417,6 +422,9 @@ class SetBonderListCommand(Command):
 
     @classmethod
     def _to_address_list(cls, addresses: str) -> List[Address]:
+        if addresses == "":
+            return []
+
         return [
             Address.from_string(address)
             for address in addresses.split(",")
