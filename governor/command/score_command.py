@@ -19,6 +19,7 @@ from .command import Command
 from ..utils import (
     confirm_transaction,
     print_response,
+    resolve_address,
     resolve_nid,
     resolve_url,
     resolve_wallet,
@@ -46,7 +47,7 @@ class DeployCommand(Command):
         )
         score_parser.add_argument(
             "--to",
-            type=Address.from_string,
+            type=str,
             nargs="?",
             metavar="score_address",
             default=SYSTEM_SCORE_ADDRESS,
@@ -68,7 +69,7 @@ class DeployCommand(Command):
         nid: int = resolve_nid(args.nid, args.url)
         score_path: str = args.score_path
         wallet: KeyWallet = resolve_wallet(args)
-        to: Address = args.to
+        to: Address = resolve_address(args.to)
         step_limit: int = args.step_limit
 
         hooks = {
@@ -96,7 +97,7 @@ class DeployCommand(Command):
 
         if step_limit <= 0:
             tx = builder.build()
-            step_limit = client.estimate_step(tx, hooks=hooks)
+            step_limit = client.estimate_step(tx, hooks=hooks) * 12 // 10
 
         builder.step_limit(step_limit)
         tx = builder.build()
