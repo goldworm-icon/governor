@@ -18,6 +18,7 @@ import argparse
 import logging
 import sys
 import time
+import os
 
 from icon.data import TransactionResult
 from icon.data.address import (
@@ -190,10 +191,11 @@ def _print_tx_result(url: str, tx_hash: bytes) -> int:
 def _get_epilog() -> str:
     urls = _get_predefined_urls()
     addresses = _get_predefined_addresses()
-    return f"{urls}\n\n{addresses}"
+    envs = _get_predefined_envs()
+    return f"{urls}\n\n{addresses}\n\n{envs}"
 
 
-def _get_predefined_urls():
+def _get_predefined_urls() -> str:
     words = ["predefined urls:"]
 
     for key, value in PREDEFINED_URLS.items():
@@ -204,7 +206,7 @@ def _get_predefined_urls():
     return "\n".join(words)
 
 
-def _get_predefined_addresses():
+def _get_predefined_addresses() -> str:
     scores = {
         "system": SYSTEM_SCORE_ADDRESS,
         "governance": GOVERNANCE_SCORE_ADDRESS,
@@ -219,14 +221,25 @@ def _get_predefined_addresses():
     return "\n".join(words)
 
 
+def _get_predefined_envs() -> str:
+    words = (
+        "predefined environment variables:",
+        "GOV_URL",
+        "GOV_NID",
+    )
+    return "\n".join(words)
+
+
 def create_common_parser() -> argparse.ArgumentParser:
+    default_url: str = os.environ.get("GOV_URL", DEFAULT_URL)
+
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument(
         "--url",
         "-u",
         type=str,
         required=False,
-        default=DEFAULT_URL,
+        default=default_url,
         help=f"node url default) {DEFAULT_URL}",
     )
     parent_parser.add_argument(
