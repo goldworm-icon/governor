@@ -49,6 +49,7 @@ def main() -> int:
         BlockCommand(),
         BonderListCommand(),
         DelegationCommand(),
+        IISSInfoCommand(),
         InImportWhiteListCommand(),
         InScoreBlackListCommand(),
         IScoreCommand(),

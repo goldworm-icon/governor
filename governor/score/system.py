@@ -112,6 +112,11 @@ class SystemScore(object):
         tx = self._create_call_tx("setBonderList", call_params, hooks=hooks)
         return self._client.send_transaction(tx, hooks=hooks)
 
+    def get_iiss_info(self, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
+        method = "getIISSInfo"
+        params = self._create_query_call(method, None)
+        return self._client.call(params, hooks=hooks)
+
     def _create_call_tx(self, method: str, params: Dict[str, Any] = None, **kwargs) -> Transaction:
         builder = (
             CallTransactionBuilder()
