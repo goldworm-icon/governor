@@ -47,6 +47,7 @@ def main() -> int:
         AccountCommand(),
         BalanceCommand(),
         BlockCommand(),
+        BondCommand(),
         BonderListCommand(),
         DelegationCommand(),
         IISSInfoCommand(),

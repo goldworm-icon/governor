@@ -13,6 +13,7 @@ __all__ = (
     "ClaimIScoreCommand",
     "BonderListCommand",
     "SetBonderListCommand",
+    "BondCommand",
 )
 
 import functools
@@ -379,6 +380,34 @@ class BonderListCommand(Command):
 
         score = _create_system_score(args, invoke=False)
         result: Dict[str, str] = score.get_bonder_list(address, hooks=self._hooks)
+        print_result(result)
+
+        return 0
+
+
+class BondCommand(Command):
+    def __init__(self):
+        super().__init__(name="bond", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "getBond command of system score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.add_argument("address", type=str, nargs="?", help="address")
+        parser.add_argument(
+            "--keystore", "-k", type=str, required=False, help="keystore file path"
+        )
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        address: Address = get_address_from_args(args)
+
+        score = _create_system_score(args, invoke=False)
+        result: Dict[str, str] = score.get_bond(address, hooks=self._hooks)
         print_result(result)
 
         return 0
