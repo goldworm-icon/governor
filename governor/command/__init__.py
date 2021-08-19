@@ -28,7 +28,7 @@ from .block_command import BlockCommand
 from .governance_score_command import *
 from .revision_command import *
 from .score_api_command import *
-from .score_command import DeployCommand
+from .score_command import DeployCommand, DownloadCommand
 from .status_command import StatusCommand
 from .step_command import *
 from .system_score_command import *

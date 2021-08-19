@@ -50,6 +50,7 @@ def main() -> int:
         BondCommand(),
         BonderListCommand(),
         DelegationCommand(),
+        DownloadCommand(),
         IISSInfoCommand(),
         InImportWhiteListCommand(),
         InScoreBlackListCommand(),
