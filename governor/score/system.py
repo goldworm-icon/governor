@@ -123,6 +123,12 @@ class SystemScore(object):
         params = self._create_query_call(method, None)
         return self._client.call(params, hooks=hooks)
 
+    def get_revision(self, hooks: Dict[str, Callable] = None) -> int:
+        method = "getRevision"
+        params = self._create_query_call(method, None)
+        hex_revision: str = self._client.call(params, hooks=hooks)
+        return int(hex_revision, base=16)
+
     def _create_call_tx(self, method: str, params: Dict[str, Any] = None, **kwargs) -> Transaction:
         builder = (
             CallTransactionBuilder()

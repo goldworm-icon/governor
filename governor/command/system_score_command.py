@@ -14,6 +14,7 @@ __all__ = (
     "BonderListCommand",
     "SetBonderListCommand",
     "BondCommand",
+    "SystemRevisionCommand",
 )
 
 import functools
@@ -481,3 +482,25 @@ class SetBonderListCommand(Command):
             Address.from_string(address)
             for address in addresses.split(",")
         ]
+
+
+class SystemRevisionCommand(Command):
+    def __init__(self):
+        super().__init__(name="sysRevision", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "Call getRevision of system score. goloop only"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        score = _create_system_score(args, invoke=False)
+        revision: int = score.get_revision(self._hooks)
+        print_result(revision)
+
+        return 0
