@@ -1,2 +1,2 @@
-gwiconsdk
+git+https://github.com/goldworm-icon/gw-iconsdk.git@master#egg=gwiconsdk
 neotermcolor
