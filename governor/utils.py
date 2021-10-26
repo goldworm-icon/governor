@@ -92,12 +92,14 @@ def resolve_nid(nid: int, url: str) -> int:
 
 def resolve_wallet(args) -> KeyWallet:
     path: str = args.keystore
-    password: str = args.password
+    password: str = get_password(args.password)
+    return KeyWallet.load(path, password)
 
+
+def get_password(password: Optional[str] = None) -> str:
     if password is None:
         password = getpass.getpass("> Password: ")
-
-    return KeyWallet.load(path, password)
+    return password
 
 
 def print_with_title(title: str, data: Any):

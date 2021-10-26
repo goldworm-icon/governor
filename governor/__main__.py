@@ -49,6 +49,7 @@ def main() -> int:
         BlockCommand(),
         BondCommand(),
         BonderListCommand(),
+        CreateWalletCommand(),
         DelegationCommand(),
         DownloadCommand(),
         IISSInfoCommand(),

@@ -33,4 +33,4 @@ from .status_command import StatusCommand
 from .step_command import *
 from .system_score_command import *
 from .transaction_command import *
-from .wallet_command import WalletCommand
+from .wallet_command import *
