@@ -237,7 +237,7 @@ class GovernanceWriter(GovernanceListener):
     def _create_tx_handler(self) -> TxHandler:
         return TxHandler(self._icon_service, self._nid, self.on_send_request)
 
-    def update(self, score_path: str, estimate: bool) -> str:
+    def update(self, score_path: str, step_limit: int, estimate: bool) -> str:
         """Update governance SCORE
 
         :return: tx_hash
@@ -249,7 +249,9 @@ class GovernanceWriter(GovernanceListener):
         content: bytes = gen_deploy_data_content(score_path)
 
         tx_handler = self._create_tx_handler()
-        ret = tx_handler.update(self._owner, GOVERNANCE_ADDRESS, content, estimate=estimate)
+        ret = tx_handler.update(
+            self._owner, GOVERNANCE_ADDRESS, content, step_limit=step_limit, estimate=estimate
+        )
 
         return ret
 

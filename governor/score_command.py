@@ -68,16 +68,24 @@ def _init_for_update(sub_parser, common_parent_parser, invoke_parent_parser):
         required=False,
         help="estimate step"
     )
+    score_parser.add_argument(
+        "--step-limit",
+        default=0x80000000,
+        type=int,
+        required=False,
+        help="Set stepLimit. [default: 2_147_483_648]"
+    )
 
     score_parser.set_defaults(func=_update_governance_score)
 
 
 def _update_governance_score(args) -> Union[int, str]:
     score_path: str = args.score_path
+    step_limit: int = args.step_limit
     estimate: bool = args.estimate
 
     writer = create_writer_by_args(args)
-    ret = writer.update(score_path, estimate)
+    ret = writer.update(score_path, step_limit, estimate)
 
     if estimate:
         print(f"Estimate step: {ret}, {hex(ret)}")
