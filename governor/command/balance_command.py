@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+__all__ = ("BalanceCommand", "TotalSupplyCommand", "TransferCommand")
 
 from typing import Union
 
@@ -54,6 +55,28 @@ class BalanceCommand(Command):
         else:
             print("Address not defined")
 
+        return 0
+
+
+class TotalSupplyCommand(Command):
+    def __init__(self):
+        super().__init__(name="totalSupply", readonly=True)
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "icx_getTotalSupply"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+        parser.set_defaults(func=self._run)
+
+    @classmethod
+    def _run(cls, args) -> int:
+        url: str = resolve_url(args.url)
+        hooks = {"request": print_request, "response": print_response}
+        client: icon.Client = icon.create_client(url)
+        total_supply: int = client.get_total_supply(hooks=hooks)
+        print(f"total_supply: {total_supply}")
         return 0
 
 

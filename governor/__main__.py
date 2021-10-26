@@ -70,6 +70,7 @@ def main() -> int:
         StepPriceCommand(),
         SubPRepsCommand(),
         SystemRevisionCommand(),
+        TotalSupplyCommand(),
         TransactionCommand(),
         TransactionResultCommand(),
         UpdateServiceConfigCommand(),
