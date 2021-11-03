@@ -129,6 +129,11 @@ class SystemScore(object):
         hex_revision: str = self._client.call(params, hooks=hooks)
         return int(hex_revision, base=16)
 
+    def get_prep_term(self, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
+        method = "getPRepTerm"
+        params = self._create_query_call(method, None)
+        return self._client.call(params, hooks=hooks)
+
     def _create_call_tx(self, method: str, params: Dict[str, Any] = None, **kwargs) -> Transaction:
         builder = (
             CallTransactionBuilder()
