@@ -62,6 +62,7 @@ def main() -> int:
         PRepsCommand(),
         RevisionCommand(),
         ScoreApiCommand(),
+        ScoreOwnerCommand(),
         ScoreStatusCommand(),
         ServiceConfigCommand(),
         StakeCommand(),

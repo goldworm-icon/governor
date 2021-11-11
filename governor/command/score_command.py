@@ -54,7 +54,7 @@ class DeployCommand(Command):
             type=str,
             nargs="?",
             metavar="score_address",
-            default=SYSTEM_SCORE_ADDRESS,
+            default=str(SYSTEM_SCORE_ADDRESS),
             help="score address to update or system score will be used as default",
         )
         score_parser.add_argument(

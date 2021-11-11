@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 
 __all__ = (
-    "StakeCommand",
-    "SetStakeCommand",
-    "PRepCommand",
-    "PRepsCommand",
-    "MainPRepsCommand",
-    "SubPRepsCommand",
+    "BondCommand",
+    "BonderListCommand",
+    "ClaimIScoreCommand",
     "DelegationCommand",
     "IISSInfoCommand",
     "IScoreCommand",
-    "ClaimIScoreCommand",
-    "BonderListCommand",
+    "MainPRepsCommand",
+    "PRepCommand",
+    "PRepsCommand",
+    "ScoreOwnerCommand",
     "SetBonderListCommand",
-    "BondCommand",
+    "SetStakeCommand",
+    "StakeCommand",
+    "SubPRepsCommand",
     "SystemRevisionCommand",
     "TermCommand",
 )
@@ -525,5 +526,29 @@ class TermCommand(Command):
         score = _create_system_score(args, invoke=False)
         result: Dict[str, str] = score.get_prep_term(self._hooks)
         print_result(result)
+
+        return 0
+
+
+class ScoreOwnerCommand(Command):
+    def __init__(self):
+        super().__init__(name="scoreOwner", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "Display the owner of a given score"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+        parser.add_argument("address", type=str, nargs="?", help="score address")
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        score = _create_system_score(args, invoke=False)
+        address: Address = get_address_from_args(args)
+
+        owner: Address = score.get_score_owner(address, self._hooks)
+        print_result(owner)
 
         return 0

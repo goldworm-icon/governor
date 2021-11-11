@@ -134,6 +134,11 @@ class SystemScore(object):
         params = self._create_query_call(method, None)
         return self._client.call(params, hooks=hooks)
 
+    def get_score_owner(self, score: Address, hooks: Dict[str, Callable] = None) -> Address:
+        call_params = {"score": score}
+        params = self._create_query_call("getScoreOwner", call_params)
+        return Address.from_string(self._client.call(params, hooks=hooks))
+
     def _create_call_tx(self, method: str, params: Dict[str, Any] = None, **kwargs) -> Transaction:
         builder = (
             CallTransactionBuilder()
