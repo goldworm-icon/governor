@@ -5,7 +5,6 @@ import os
 
 import icon
 from icon.data import hex_to_bytes
-
 from .command import Command
 from .. import utils
 
@@ -21,9 +20,7 @@ class WalletCommand(Command):
         parser.add_argument(
             "path", type=str, default=None, help="keystore file path or private key in hex format"
         )
-        parser.add_argument(
-            "--password", type=str, nargs="?", default=None, help="keystore file path or private key in hex format"
-        )
+        utils.add_password_argument(parser)
         parser.set_defaults(func=self._run)
 
     @classmethod
@@ -64,9 +61,7 @@ class CreateWalletCommand(Command):
         parser.add_argument(
             "--private-key", type=str, nargs="?", default=None, help="private key in hex format. [ex: 0xdeadbeef...]"
         )
-        parser.add_argument(
-            "--password", type=str, nargs="?", default=None, help="Password used for encrypting a keystore file"
-        )
+        utils.add_password_argument(parser)
         parser.set_defaults(func=self._run)
 
     @classmethod

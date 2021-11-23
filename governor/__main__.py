@@ -16,28 +16,25 @@
 
 import argparse
 import logging
+import os
 import sys
 import time
-import os
 
 from icon.data import TransactionResult
-from icon.data.address import (
-    SYSTEM_SCORE_ADDRESS,
-    GOVERNANCE_SCORE_ADDRESS,
-    TREASURY_ADDRESS,
-)
-
 from . import __about__
 from .command import *
 from .constants import (
     DEFAULT_URL,
     DEFAULT_NID,
+    PREDEFINED_ADDRESSES,
     PREDEFINED_URLS,
 )
 from .utils import (
-    resolve_url,
+    add_keystore_argument,
+    add_password_argument,
     print_arguments,
     print_tx_result,
+    resolve_url,
 )
 
 
@@ -215,27 +212,24 @@ def _get_predefined_urls() -> str:
 
 
 def _get_predefined_addresses() -> str:
-    scores = {
-        "system": SYSTEM_SCORE_ADDRESS,
-        "governance": GOVERNANCE_SCORE_ADDRESS,
-        "treasury": TREASURY_ADDRESS,
-    }
-
     words = ["predefined addresses:"]
 
-    for k in scores:
-        words.append(f"{k.rjust(10)}: {scores[k]}")
+    for name, address in PREDEFINED_ADDRESSES.items():
+        words.append(f"{name.rjust(10)}: {address}")
 
     return "\n".join(words)
 
 
 def _get_predefined_envs() -> str:
-    words = (
+    envs = (
         "predefined environment variables:",
         "GOV_URL",
         "GOV_NID",
+        "GOV_KEY_STORE",
+        "GOV_PASSWORD",
+        "GOV_STEP_LIMIT",
     )
-    return "\n".join(words)
+    return "\n".join((f"{env.ljust(14)}: {os.environ.get(env, '')}" for env in envs))
 
 
 def create_common_parser() -> argparse.ArgumentParser:
@@ -277,26 +271,19 @@ def create_invoke_parser() -> argparse.ArgumentParser:
 
     :return:
     """
+    password: str = os.environ.get("GOV_PASSWORD", None)
+    keystore: str = os.environ.get("GOV_KEY_STORE", None)
+    step_limit: int = int(os.environ.get("GOV_STEP_LIMIT", 0))
 
     parent_parser = argparse.ArgumentParser(add_help=False)
-
-    parent_parser.add_argument(
-        "--password",
-        "-p",
-        type=str,
-        required=False,
-        default=None,
-        help="keystore password",
-    )
-    parent_parser.add_argument(
-        "--keystore", "-k", type=str, required=True, help="keystore file path"
-    )
+    add_password_argument(parent_parser)
+    add_keystore_argument(parent_parser, required=True)
     parent_parser.add_argument(
         "--step-limit",
         "-s",
         type=int,
         required=False,
-        default=0,
+        default=step_limit,
         help="stepLimit configuration",
     )
     parent_parser.add_argument(

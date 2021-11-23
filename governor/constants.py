@@ -30,16 +30,17 @@ DEFAULT_NID = 3
 COLUMN = 80
 
 PREDEFINED_URLS = {
-    "mainnet": ("https://ctz.solidwallet.io/api/v3", 1),
-    "testnet": ("https://test-ctz.solidwallet.io/api/v3", 2),
     "bicon": ("https://bicon.net.solidwallet.io/api/v3", 3),
+    "flower": ("http://15.164.158.156:9000/api/v3", 0x50),
+    "gochain": ("http://localhost:9080/api/v3", 7),
+    "hannam": ("https://hannam.net.solidwallet.io/api/v3", 3),
+    "lisbon": ("https://lisbon.solidwallet.io/api/v3", 3),
+    "localnet": (DEFAULT_URL, DEFAULT_NID),
+    "mainnet": ("https://ctz.solidwallet.io/api/v3", 1),
+    "sejong": ("https://sejong.net.solidwallet.io/api/v3", 0x53),
+    "testnet": ("https://test-ctz.solidwallet.io/api/v3", 2),
     "qanet": ("https://eunsoo.net.solidwallet.io/api/v3", 80),
     "zicon": ("https://zicon.net.solidwallet.io/api/v3", 1),
-    "localnet": (DEFAULT_URL, DEFAULT_NID),
-    "gochain": ("http://localhost:9080/api/v3", 7),
-    "sejong": ("https://sejong.net.solidwallet.io/api/v3", 0x53),
-    "hannam": ("https://hannam.net.solidwallet.io/api/v3", 3),
-    "flower": ("http://15.164.158.156:9000/api/v3", 0x50),
 }
 
 PREDEFINED_ADDRESSES = {
@@ -48,4 +49,7 @@ PREDEFINED_ADDRESSES = {
     "governance": GOVERNANCE_SCORE_ADDRESS,
     "gov": GOVERNANCE_SCORE_ADDRESS,
     "treasury": TREASURY_ADDRESS,
+    "cpft": Address.from_string("cxdca1178010b5368aea929ad5c06abee64b91acc2"),
+    "cpst": Address.from_string("cxd965531d1cce5daad1d1d3ee1efb39ce68f442fc"),
+    "cps": Address.from_string("cx9f4ab72f854d3ccdc59aa6f2c3e2215dd62e879f"),
 }

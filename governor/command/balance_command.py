@@ -8,9 +8,9 @@ from icon.builder import TransactionBuilder
 from icon.data import Address
 from icon.data.unit import loop_to_str
 from icon.wallet import KeyWallet
-
 from .command import Command
 from ..utils import (
+    add_keystore_argument,
     get_address_from_args,
     get_coin_from_string,
     print_request,
@@ -32,14 +32,10 @@ class BalanceCommand(Command):
         parser = sub_parser.add_parser(
             self.name, parents=[common_parent_parser], help=desc
         )
-
         parser.add_argument(
             "address", type=str, nargs="?", default=None, help="address"
         )
-        parser.add_argument(
-            "--keystore", "-k", type=str, required=False, help="keystore file path"
-        )
-
+        add_keystore_argument(parser, required=False)
         parser.set_defaults(func=self._run)
 
     @classmethod

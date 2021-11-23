@@ -33,6 +33,7 @@ from .command import Command
 from .. import result_type
 from ..score.system import SystemScore
 from ..utils import (
+    add_keystore_argument,
     confirm_transaction,
     get_address_from_args,
     print_result,
@@ -57,9 +58,7 @@ class StakeCommand(Command):
         )
 
         parser.add_argument("address", type=str, nargs="?", help="address")
-        parser.add_argument(
-            "--keystore", "-k", type=str, required=False, help="keystore file path"
-        )
+        add_keystore_argument(parser, required=False)
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
@@ -115,9 +114,7 @@ class PRepCommand(Command):
         )
 
         parser.add_argument("address", type=str, nargs="?", help="address")
-        parser.add_argument(
-            "--keystore", "-k", type=str, required=False, help="keystore file path"
-        )
+        add_keystore_argument(parser, required=False)
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
@@ -246,9 +243,7 @@ class DelegationCommand(Command):
         )
 
         parser.add_argument("address", type=str, nargs="?", help="address")
-        parser.add_argument(
-            "--keystore", "-k", type=str, required=False, help="keystore file path"
-        )
+        add_keystore_argument(parser, required=False)
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
@@ -373,9 +368,7 @@ class BonderListCommand(Command):
         )
 
         parser.add_argument("address", type=str, nargs="?", help="address")
-        parser.add_argument(
-            "--keystore", "-k", type=str, required=False, help="keystore file path"
-        )
+        add_keystore_argument(parser, required=False)
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
@@ -401,9 +394,7 @@ class BondCommand(Command):
         )
 
         parser.add_argument("address", type=str, nargs="?", help="address")
-        parser.add_argument(
-            "--keystore", "-k", type=str, required=False, help="keystore file path"
-        )
+        add_keystore_argument(parser, required=False)
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:

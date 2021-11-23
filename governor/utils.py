@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-
+import argparse
 import getpass
 import json
+import os
 import re
 from typing import TYPE_CHECKING, Optional, Any, Dict
 from urllib.parse import urlparse
 
-from icon.data import RpcRequest, TransactionResult, Address
-from icon.wallet import KeyWallet, LightWallet
 from neotermcolor import colored
 
+from icon.data import RpcRequest, TransactionResult, Address
+from icon.wallet import KeyWallet, LightWallet
 from .constants import COLUMN, PREDEFINED_URLS, PREDEFINED_ADDRESSES
 
 if TYPE_CHECKING:
     from urllib.parse import ParseResult
-
 
 NUMBER_PATTERN = re.compile("[\d]+")
 EXP_PATTERN = re.compile("[\d]+e[\d]+")
@@ -163,3 +163,25 @@ def exp_to_int(value: str) -> Optional[int]:
 
     nums = value.split("e")
     return int(nums[0], 10) * 10 ** int(nums[1], 10)
+
+
+def add_keystore_argument(parser: argparse.ArgumentParser, required: bool):
+    parser.add_argument(
+        "--keystore",
+        "-k",
+        type=str,
+        default=os.environ.get("GOV_KEY_STORE", None),
+        required=required,
+        help="keystore file path"
+    )
+
+
+def add_password_argument(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "--password",
+        "-p",
+        type=str,
+        required=False,
+        default=os.environ.get("GOV_PASSWORD", None),
+        help="keystore password",
+    )
