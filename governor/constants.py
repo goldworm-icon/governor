@@ -34,7 +34,7 @@ PREDEFINED_URLS = {
     "bicon": ("https://bicon.net.solidwallet.io/api/v3", 3),
     "gochain": ("http://localhost:9080/api/v3", 7),
     "hannam": ("https://hannam.net.solidwallet.io/api/v3", 3),
-    "lisbon": ("https://lisbon.solidwallet.io/api/v3", 3),
+    "lisbon": ("https://lisbon.net.solidwallet.io/api/v3", 2),
     "localnet": (DEFAULT_URL, DEFAULT_NID),
     "mainnet": ("https://ctz.solidwallet.io/api/v3", 1),
     "sejong": ("https://sejong.net.solidwallet.io/api/v3", 0x53),
