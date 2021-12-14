@@ -166,11 +166,15 @@ def exp_to_int(value: str) -> Optional[int]:
 
 
 def add_keystore_argument(parser: argparse.ArgumentParser, required: bool):
+    keystore: str = os.environ.get("GOV_KEY_STORE", None)
+    if required:
+        required = keystore is None
+
     parser.add_argument(
         "--keystore",
         "-k",
         type=str,
-        default=os.environ.get("GOV_KEY_STORE", None),
+        default=keystore,
         required=required,
         help="keystore file path"
     )

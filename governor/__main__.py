@@ -271,8 +271,6 @@ def create_invoke_parser() -> argparse.ArgumentParser:
 
     :return:
     """
-    password: str = os.environ.get("GOV_PASSWORD", None)
-    keystore: str = os.environ.get("GOV_KEY_STORE", None)
     step_limit: int = int(os.environ.get("GOV_STEP_LIMIT", 0))
 
     parent_parser = argparse.ArgumentParser(add_help=False)
