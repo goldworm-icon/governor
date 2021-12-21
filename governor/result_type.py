@@ -6,7 +6,9 @@ GET_DELEGATION = {
 
 GET_PREP = {
     "blockHeight": int,
+    "bonded": int,
     "delegated": int,
+    "power": int,
     "irep": int,
     "lastGenerateBlockHeight": int,
     "totalBlocks": int,
@@ -27,13 +29,16 @@ GET_PREPS = {
             "stake": int,
             "blockHeight": int,
             "txIndex": int,
+            "bonded": int,
             "delegated": int,
+            "power": int,
             "totalBlocks": int,
             "validatedBlocks": int,
             "irep": int,
             "irepUpdateBlockHeight": int,
             "unvalidatedSequenceBlocks": int,
             "lastGenerateBlockHeight": int,
+            "lastHeight": int,
         }
     ]
 }
