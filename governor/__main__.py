@@ -57,6 +57,7 @@ def main() -> int:
         MaxStepLimitCommand(),
         PRepCommand(),
         PRepsCommand(),
+        PRepStatsCommand(),
         RevisionCommand(),
         ScoreApiCommand(),
         ScoreOwnerCommand(),

@@ -10,6 +10,7 @@ __all__ = (
     "MainPRepsCommand",
     "PRepCommand",
     "PRepsCommand",
+    "PRepStatsCommand",
     "ScoreOwnerCommand",
     "SetBonderListCommand",
     "SetStakeCommand",
@@ -200,7 +201,7 @@ class SubPRepsCommand(Command):
 
     def _run(self, args) -> int:
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_sub_preps(hooks=self._hooks)
+        result: Dict[str, str] = score.get_prep_stats(hooks=self._hooks)
         print_result(result)
 
         return 0
@@ -208,7 +209,7 @@ class SubPRepsCommand(Command):
 
 class PRepStatsCommand(Command):
     def __init__(self):
-        super().__init__(name="preps", readonly=True)
+        super().__init__(name="prepStats", readonly=True)
         self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
@@ -217,16 +218,14 @@ class PRepStatsCommand(Command):
         parser = sub_parser.add_parser(
             self.name, parents=[common_parent_parser], help=desc
         )
-
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
         score = _create_system_score(args, invoke=False)
         result: Dict[str, str] = score.get_prep_stats(hooks=self._hooks)
 
-        result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
+        result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREP_STATS, result)
         print_result(result)
-
         return 0
 
 
