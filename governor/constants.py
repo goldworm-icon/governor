@@ -16,8 +16,9 @@
 
 from icon.data.address import (
     Address,
-    SYSTEM_SCORE_ADDRESS,
+    AddressPrefix,
     GOVERNANCE_SCORE_ADDRESS,
+    SYSTEM_SCORE_ADDRESS,
     TREASURY_ADDRESS,
 )
 
@@ -32,6 +33,7 @@ COLUMN = 80
 PREDEFINED_URLS = {
     "berlin": ("https://berlin.net.solidwallet.io/api/v3", 7),
     "bicon": ("https://bicon.net.solidwallet.io/api/v3", 3),
+    "btp": ("https://btp.net.solidwallet.io/api/v3", 0x42),
     "gochain": ("http://localhost:9080/api/v3", 7),
     "hannam": ("https://hannam.net.solidwallet.io/api/v3", 3),
     "lisbon": ("https://lisbon.net.solidwallet.io/api/v3", 2),
@@ -52,4 +54,5 @@ PREDEFINED_ADDRESSES = {
     "cpft": Address.from_string("cxdca1178010b5368aea929ad5c06abee64b91acc2"),
     "cpst": Address.from_string("cxd965531d1cce5daad1d1d3ee1efb39ce68f442fc"),
     "cps": Address.from_string("cx9f4ab72f854d3ccdc59aa6f2c3e2215dd62e879f"),
+    "zero": Address.from_int(AddressPrefix.EOA, 0)
 }
