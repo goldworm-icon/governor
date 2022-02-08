@@ -77,6 +77,7 @@ def main() -> int:
         TransactionCommand(),
         TransactionResultCommand(),
         UpdateServiceConfigCommand(),
+        ValidatorsByHeightCommand(),
         VersionCommand(),
         VotesByHashCommand(),
         WalletCommand(),

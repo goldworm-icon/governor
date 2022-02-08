@@ -6,6 +6,8 @@ from icon.data import (
     hex_to_bytes,
     str_to_int,
 )
+from icon.data.block_header import BlockHeader
+from icon.data.validators import Validators
 
 from .command import Command
 from ..utils import (
@@ -69,7 +71,8 @@ class BlockHeaderByHashCommand(Command):
 
         client: icon.Client = icon.create_client(url)
         data: bytes = client.get_block_header_by_height(height, hooks=self._hooks)
-        print_result(f"{bytes_to_hex(data)}")
+        block_header = BlockHeader(data)
+        print_result(f"{block_header}")
         return 0
 
 
@@ -101,4 +104,35 @@ class VotesByHashCommand(Command):
         client: icon.Client = icon.create_client(url)
         data: bytes = client.get_votes_by_height(height, hooks=hooks)
         print_result(f"{bytes_to_hex(data)}")
+        return 0
+
+
+class ValidatorsByHeightCommand(Command):
+    def __init__(self):
+        super().__init__(name="validatorsByHeight", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "get validators in a block"
+
+        score_parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+        score_parser.add_argument(
+            "height", type=str, nargs="?", default=None, help="block height"
+        )
+        score_parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        verbose: bool = args.verbose
+        url: str = resolve_url(args.url)
+        height: int = str_to_int(args.height)
+        if verbose:
+            hooks = self._hooks
+        else:
+            hooks = {}
+
+        client: icon.Client = icon.create_client(url)
+        validators: Validators = client.get_validators_by_height(height, hooks=hooks)
+        print_result(f"{validators}")
         return 0
