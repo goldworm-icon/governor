@@ -26,6 +26,7 @@ from .account_command import AccountCommand
 from .balance_command import *
 from .block_command import BlockCommand
 from .governance_score_command import *
+from .icx_command import *
 from .revision_command import *
 from .score_api_command import *
 from .score_command import DeployCommand, DownloadCommand

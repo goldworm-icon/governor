@@ -17,10 +17,11 @@
 import argparse
 import logging
 import os
+
 import sys
 import time
-
 from icon.data import TransactionResult
+
 from . import __about__
 from .command import *
 from .constants import (
@@ -44,9 +45,11 @@ def main() -> int:
         AccountCommand(),
         BalanceCommand(),
         BlockCommand(),
+        BlockHeaderByHashCommand(),
         BondCommand(),
         BonderListCommand(),
         CreateWalletCommand(),
+        DataByHashCommand(),
         DelegationCommand(),
         DownloadCommand(),
         IISSInfoCommand(),
@@ -75,6 +78,7 @@ def main() -> int:
         TransactionResultCommand(),
         UpdateServiceConfigCommand(),
         VersionCommand(),
+        VotesByHashCommand(),
         WalletCommand(),
 
         # Invoke
