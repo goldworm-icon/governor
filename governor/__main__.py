@@ -17,7 +17,6 @@
 import argparse
 import logging
 import os
-
 import sys
 import time
 from icon.data import TransactionResult
@@ -48,6 +47,7 @@ def main() -> int:
         BlockHeaderByHashCommand(),
         BondCommand(),
         BonderListCommand(),
+        ConsensusInfoCommand(),
         CreateWalletCommand(),
         DataByHashCommand(),
         DelegationCommand(),
@@ -79,7 +79,7 @@ def main() -> int:
         UpdateServiceConfigCommand(),
         ValidatorsByHeightCommand(),
         VersionCommand(),
-        VotesByHashCommand(),
+        VotesByHeightCommand(),
         WalletCommand(),
 
         # Invoke

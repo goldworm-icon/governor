@@ -25,6 +25,7 @@
 from .account_command import AccountCommand
 from .balance_command import *
 from .block_command import BlockCommand
+from .consensus_command import ConsensusInfoCommand
 from .governance_score_command import *
 from .icx_command import *
 from .revision_command import *

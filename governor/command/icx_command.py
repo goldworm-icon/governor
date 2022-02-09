@@ -6,8 +6,11 @@ from icon.data import (
     hex_to_bytes,
     str_to_int,
 )
+from icon.data.address import Address
 from icon.data.block_header import BlockHeader
 from icon.data.validators import Validators
+from icon.data.vote import Votes
+from typing import List
 
 from .command import Command
 from ..utils import (
@@ -76,13 +79,13 @@ class BlockHeaderByHashCommand(Command):
         return 0
 
 
-class VotesByHashCommand(Command):
+class VotesByHeightCommand(Command):
     def __init__(self):
-        super().__init__(name="votesByHash", readonly=True)
+        super().__init__(name="votesByHeight", readonly=True)
         self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
-        desc = "icx_getVotesByHash command"
+        desc = "icx_getVotesByHeight command"
 
         score_parser = sub_parser.add_parser(
             self.name, parents=[common_parent_parser], help=desc
@@ -102,8 +105,19 @@ class VotesByHashCommand(Command):
             hooks = {}
 
         client: icon.Client = icon.create_client(url)
-        data: bytes = client.get_votes_by_height(height, hooks=hooks)
-        print_result(f"{bytes_to_hex(data)}")
+        block_header = client.ex.get_block_header_by_height(height)
+
+        bs: bytes = client.get_votes_by_height(height, hooks=hooks)
+        votes = Votes.from_bytes(bs)
+        addresses: List[Address] = votes.get_addresses(height, block_header.hash)
+        for address in addresses:
+            print(address)
+
+        print("--------------------------------")
+
+        client.ex.get_block_header_by_height(height)
+        votes: Votes = client.ex.get_votes_by_height(height, hooks=hooks)
+        print(votes)
         return 0
 
 
@@ -133,6 +147,6 @@ class ValidatorsByHeightCommand(Command):
             hooks = {}
 
         client: icon.Client = icon.create_client(url)
-        validators: Validators = client.get_validators_by_height(height, hooks=hooks)
+        validators: Validators = client.ex.get_validators_by_height(height, hooks=hooks)
         print_result(f"{validators}")
         return 0
