@@ -22,6 +22,7 @@ from icon.utils import hex_to_bytes
 
 from .command import Command
 from ..utils import (
+    get_hooks_from_args,
     print_response,
     print_result,
     resolve_url,
@@ -52,9 +53,10 @@ class TransactionCommand(Command):
     def _run(cls, args) -> int:
         url: str = resolve_url(args.url)
         tx_hash: bytes = hex_to_bytes(args.tx_hash)
+        hooks = get_hooks_from_args(args)
 
         client: icon.Client = icon.create_client(url)
-        tx: Transaction = client.get_transaction(tx_hash)
+        tx: Transaction = client.get_transaction(tx_hash, hooks=hooks)
         print_result(str(tx))
 
         return 0
@@ -84,9 +86,10 @@ class TransactionResultCommand(Command):
     def _run(cls, args) -> int:
         url: str = resolve_url(args.url)
         tx_hash: bytes = hex_to_bytes(args.tx_hash)
+        hooks = get_hooks_from_args(args)
 
         client: icon.Client = icon.create_client(url)
-        tx_result: TransactionResult = client.get_transaction_result(tx_hash)
+        tx_result: TransactionResult = client.get_transaction_result(tx_hash, hooks=hooks)
         print_response(f"{tx_result}")
 
         return 0

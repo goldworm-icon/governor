@@ -21,7 +21,6 @@ __all__ = (
     "TermCommand",
 )
 
-import functools
 from typing import Dict, Any, List
 
 import icon
@@ -34,8 +33,8 @@ from .. import result_type
 from ..score.system import SystemScore
 from ..utils import (
     add_keystore_argument,
-    confirm_transaction,
     get_address_from_args,
+    get_hooks_from_args,
     print_result,
     print_request,
     print_response,
@@ -48,7 +47,6 @@ from ..utils import (
 class StakeCommand(Command):
     def __init__(self):
         super().__init__(name="stake", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getStake command of system score"
@@ -62,10 +60,11 @@ class StakeCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         address: Address = get_address_from_args(args)
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_stake(address, hooks=self._hooks)
+        result: Dict[str, str] = score.get_stake(address, hooks=hooks)
         self._print_result(result)
 
         return 0
@@ -84,7 +83,6 @@ class StakeCommand(Command):
 class SetStakeCommand(Command):
     def __init__(self):
         super().__init__(name="setStake", readonly=False)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "setStake command of system score"
@@ -97,14 +95,14 @@ class SetStakeCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> bytes:
+        hooks = get_hooks_from_args(args, readonly=False)
         score = _create_system_score(args, invoke=True)
-        return score.set_stake(args.stake, hooks=self._hooks)
+        return score.set_stake(args.stake, hooks=hooks)
 
 
 class PRepCommand(Command):
     def __init__(self):
         super().__init__(name="prep", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getPRep command of system score"
@@ -118,10 +116,11 @@ class PRepCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         address: Address = get_address_from_args(args)
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_prep(address, hooks=self._hooks)
+        result: Dict[str, str] = score.get_prep(address, hooks=hooks)
 
         result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREP, result)
         print_result(result)
@@ -132,7 +131,6 @@ class PRepCommand(Command):
 class PRepsCommand(Command):
     def __init__(self):
         super().__init__(name="preps", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getPReps command of system score"
@@ -156,9 +154,10 @@ class PRepsCommand(Command):
         start: int = args.start
         end: int = args.end
         height: int = args.height
+        hooks = get_hooks_from_args(args)
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_preps(start, end, height, hooks=self._hooks)
+        result: Dict[str, str] = score.get_preps(start, end, height, hooks=hooks)
 
         result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
         print_result(result)
@@ -185,7 +184,8 @@ class MainPRepsCommand(Command):
     def _run(self, args) -> int:
         height: int = args.height
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_main_preps(height, hooks=self._hooks)
+        hooks = get_hooks_from_args(args)
+        result: Dict[str, str] = score.get_main_preps(height, hooks=hooks)
         print_result(result)
 
         return 0
@@ -194,7 +194,6 @@ class MainPRepsCommand(Command):
 class SubPRepsCommand(Command):
     def __init__(self):
         super().__init__(name="subpreps", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getSubPReps command of system score"
@@ -206,8 +205,9 @@ class SubPRepsCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_prep_stats(hooks=self._hooks)
+        result: Dict[str, str] = score.get_prep_stats(hooks=hooks)
         print_result(result)
 
         return 0
@@ -216,7 +216,6 @@ class SubPRepsCommand(Command):
 class PRepStatsCommand(Command):
     def __init__(self):
         super().__init__(name="prepStats", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getPRepStats command of system score"
@@ -227,8 +226,9 @@ class PRepStatsCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_prep_stats(hooks=self._hooks)
+        result: Dict[str, str] = score.get_prep_stats(hooks=hooks)
 
         result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREP_STATS, result)
         print_result(result)
@@ -238,7 +238,6 @@ class PRepStatsCommand(Command):
 class DelegationCommand(Command):
     def __init__(self):
         super().__init__(name="delegation", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getDelegation command of system score"
@@ -252,10 +251,11 @@ class DelegationCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         address: Address = get_address_from_args(args)
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_delegation(address, hooks=self._hooks)
+        result: Dict[str, str] = score.get_delegation(address, hooks=hooks)
 
         result: Dict[str, Any] = str_to_object_by_type(
             result_type.GET_DELEGATION, result
@@ -271,7 +271,6 @@ class DelegationCommand(Command):
 class IScoreCommand(Command):
     def __init__(self):
         super().__init__(name="iscore", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "queryIScore command of system score"
@@ -288,9 +287,10 @@ class IScoreCommand(Command):
 
     def _run(self, args) -> int:
         address: Address = get_address_from_args(args)
+        hooks = get_hooks_from_args(args)
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.query_iscore(address, hooks=self._hooks)
+        result: Dict[str, str] = score.query_iscore(address, hooks=hooks)
         self._print_result(result)
 
         return 0
@@ -325,15 +325,7 @@ class ClaimIScoreCommand(Command):
 
     @classmethod
     def _run(cls, args) -> bytes:
-        yes: bool = args.yes
-
-        hooks = {
-            "request": [
-                functools.partial(confirm_transaction, yes=yes),
-                print_request,
-            ],
-            "response": print_response,
-        }
+        hooks = get_hooks_from_args(args, readonly=False)
         score = _create_system_score(args, invoke=True)
         return score.claim_iscore(hooks=hooks)
 
@@ -363,7 +355,6 @@ def _create_system_score(args, invoke: bool) -> SystemScore:
 class BonderListCommand(Command):
     def __init__(self):
         super().__init__(name="bonderList", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getBonderList command of system score"
@@ -378,9 +369,10 @@ class BonderListCommand(Command):
 
     def _run(self, args) -> int:
         address: Address = get_address_from_args(args)
+        hooks = get_hooks_from_args(args)
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_bonder_list(address, hooks=self._hooks)
+        result: Dict[str, str] = score.get_bonder_list(address, hooks=hooks)
         print_result(result)
 
         return 0
@@ -389,7 +381,6 @@ class BonderListCommand(Command):
 class BondCommand(Command):
     def __init__(self):
         super().__init__(name="bond", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getBond command of system score"
@@ -404,9 +395,10 @@ class BondCommand(Command):
 
     def _run(self, args) -> int:
         address: Address = get_address_from_args(args)
+        hooks = get_hooks_from_args(args)
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_bond(address, hooks=self._hooks)
+        result: Dict[str, str] = score.get_bond(address, hooks=hooks)
         print_result(result)
 
         return 0
@@ -415,7 +407,6 @@ class BondCommand(Command):
 class IISSInfoCommand(Command):
     def __init__(self):
         super().__init__(name="iissInfo", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "getIISSInfo command of system score"
@@ -427,8 +418,9 @@ class IISSInfoCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_iiss_info(self._hooks)
+        result: Dict[str, str] = score.get_iiss_info(hooks)
         print_result(result)
 
         return 0
@@ -458,16 +450,8 @@ class SetBonderListCommand(Command):
 
     @classmethod
     def _run(cls, args) -> bytes:
-        yes: bool = args.yes
         addresses = cls._to_address_list(args.addresses)
-
-        hooks = {
-            "request": [
-                functools.partial(confirm_transaction, yes=yes),
-                print_request,
-            ],
-            "response": print_response,
-        }
+        hooks = get_hooks_from_args(args, readonly=False)
         score = _create_system_score(args, invoke=True)
         return score.set_bonder_list(addresses, hooks=hooks)
 
@@ -485,7 +469,6 @@ class SetBonderListCommand(Command):
 class SystemRevisionCommand(Command):
     def __init__(self):
         super().__init__(name="sysRevision", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "Call getRevision of system score. goloop only"
@@ -497,8 +480,9 @@ class SystemRevisionCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_system_score(args, invoke=False)
-        revision: int = score.get_revision(self._hooks)
+        revision: int = score.get_revision(hooks)
         print_result(revision)
 
         return 0
@@ -507,7 +491,6 @@ class SystemRevisionCommand(Command):
 class TermCommand(Command):
     def __init__(self):
         super().__init__(name="term", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "Display term info"
@@ -519,8 +502,9 @@ class TermCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_prep_term(self._hooks)
+        result: Dict[str, str] = score.get_prep_term(hooks)
         print_result(result)
 
         return 0
@@ -529,7 +513,6 @@ class TermCommand(Command):
 class ScoreOwnerCommand(Command):
     def __init__(self):
         super().__init__(name="scoreOwner", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "Display the owner of a given score"
@@ -543,8 +526,9 @@ class ScoreOwnerCommand(Command):
     def _run(self, args) -> int:
         score = _create_system_score(args, invoke=False)
         address: Address = get_address_from_args(args)
+        hooks = get_hooks_from_args(args)
 
-        owner: Address = score.get_score_owner(address, self._hooks)
+        owner: Address = score.get_score_owner(address, hooks)
         print_result(owner)
 
         return 0
@@ -553,7 +537,6 @@ class ScoreOwnerCommand(Command):
 class NetworkInfoCommand(Command):
     def __init__(self):
         super().__init__(name="networkInfo", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "Display network information"
@@ -564,7 +547,8 @@ class NetworkInfoCommand(Command):
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_system_score(args, invoke=False)
-        ret = score.get_network_info(self._hooks)
+        ret = score.get_network_info(hooks)
         print_result(ret)
         return 0

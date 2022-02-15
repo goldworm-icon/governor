@@ -8,8 +8,7 @@ from icon.data import Block
 from icon.utils import hex_to_bytes
 from .command import Command
 from ..utils import (
-    print_request,
-    print_response,
+    get_hooks_from_args,
     print_result,
     resolve_url
 )
@@ -18,7 +17,6 @@ from ..utils import (
 class BlockCommand(Command):
     def __init__(self):
         super().__init__(name="block", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getBlockByHash, icx_getBlockByHeight and icx_lastBlock commands"
@@ -36,6 +34,7 @@ class BlockCommand(Command):
     def _run(self, args) -> int:
         url: str = resolve_url(args.url)
         value: Optional[str] = args.value
+        hooks = get_hooks_from_args(args)
 
         if isinstance(value, str):
             if value.startswith("0x") and len(value) == 66:
@@ -45,11 +44,11 @@ class BlockCommand(Command):
 
         client: icon.Client = icon.create_client(url)
         if isinstance(value, bytes):
-            block: Block = client.get_block_by_hash(value, hooks=self._hooks)
+            block: Block = client.get_block_by_hash(value, hooks=hooks)
         elif isinstance(value, int):
-            block: Block = client.get_block_by_height(value, hooks=self._hooks)
+            block: Block = client.get_block_by_height(value, hooks=hooks)
         else:
-            block: Block = client.get_last_block(hooks=self._hooks)
+            block: Block = client.get_last_block(hooks=hooks)
 
         print_result(f"{block}")
 

@@ -14,8 +14,7 @@ from icon.utils import (
 )
 from .command import Command
 from ..utils import (
-    print_request,
-    print_response,
+    get_hooks_from_args,
     print_result,
     resolve_url
 )
@@ -24,7 +23,6 @@ from ..utils import (
 class DataByHashCommand(Command):
     def __init__(self):
         super().__init__(name="dataByHash", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getDataByHash command"
@@ -40,6 +38,7 @@ class DataByHashCommand(Command):
     def _run(self, args) -> int:
         url: str = resolve_url(args.url)
         data_hash: str = args.data_hash
+        hooks = get_hooks_from_args(args)
 
         if data_hash.startswith("0x") and len(data_hash) == 66:
             data_hash: bytes = hex_to_bytes(data_hash)
@@ -47,7 +46,7 @@ class DataByHashCommand(Command):
             raise ValueError("Invalid data_hash")
 
         client: icon.Client = icon.create_client(url)
-        data: bytes = client.get_data_by_hash(data_hash, hooks=self._hooks)
+        data: bytes = client.get_data_by_hash(data_hash, hooks=hooks)
         print_result(f"{bytes_to_hex(data)}")
         return 0
 
@@ -55,7 +54,6 @@ class DataByHashCommand(Command):
 class BlockHeaderByHashCommand(Command):
     def __init__(self):
         super().__init__(name="blockHeaderByHash", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getBlockHeaderByHash command"
@@ -71,9 +69,10 @@ class BlockHeaderByHashCommand(Command):
     def _run(self, args) -> int:
         url: str = resolve_url(args.url)
         height: int = str_to_int(args.height)
+        hooks = get_hooks_from_args(args)
 
         client: icon.Client = icon.create_client(url)
-        data: bytes = client.get_block_header_by_height(height, hooks=self._hooks)
+        data: bytes = client.get_block_header_by_height(height, hooks=hooks)
         block_header = BlockHeader(data)
         print_result(f"{block_header}")
         return 0
@@ -82,7 +81,6 @@ class BlockHeaderByHashCommand(Command):
 class VotesByHeightCommand(Command):
     def __init__(self):
         super().__init__(name="votesByHeight", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "icx_getVotesByHeight command"
@@ -96,13 +94,9 @@ class VotesByHeightCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
-        verbose: bool = args.verbose
         url: str = resolve_url(args.url)
         height: int = str_to_int(args.height)
-        if verbose:
-            hooks = self._hooks
-        else:
-            hooks = {}
+        hooks = get_hooks_from_args(args)
 
         client: icon.Client = icon.create_client(url)
         block_header = client.ex.get_block_header_by_height(height)
@@ -124,7 +118,6 @@ class VotesByHeightCommand(Command):
 class ValidatorsByHeightCommand(Command):
     def __init__(self):
         super().__init__(name="validatorsByHeight", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "get validators in a block"
@@ -138,13 +131,9 @@ class ValidatorsByHeightCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
-        verbose: bool = args.verbose
         url: str = resolve_url(args.url)
         height: int = str_to_int(args.height)
-        if verbose:
-            hooks = self._hooks
-        else:
-            hooks = {}
+        hooks = get_hooks_from_args(args)
 
         client: icon.Client = icon.create_client(url)
         validators: Validators = client.ex.get_validators_by_height(height, hooks=hooks)

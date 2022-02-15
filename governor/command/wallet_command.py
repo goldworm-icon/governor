@@ -39,11 +39,7 @@ class WalletCommand(Command):
             pri_key: bytes = hex_to_bytes(private_key)
             wallet = icon.KeyWallet(pri_key)
 
-        print(
-            f"address: {wallet.address}\n"
-            f"pub_key: {wallet.public_key.hex()}\n"
-            f"pri_key: {wallet.private_key.hex()}\n"
-        )
+        _print_wallet_info(wallet)
         return 0
 
 
@@ -71,10 +67,13 @@ class CreateWalletCommand(Command):
         pri_key: bytes = hex_to_bytes(args.private_key)
         wallet = icon.KeyWallet(pri_key)
         wallet.save(path, password)
-
-        print(
-            f"address: {wallet.address}\n"
-            f"pub_key: {wallet.public_key.hex()}\n"
-            f"pri_key: {wallet.private_key.hex()}\n"
-        )
+        _print_wallet_info(wallet)
         return 0
+
+
+def _print_wallet_info(wallet: icon.Wallet):
+    print(
+        f"address: {wallet.address}\n"
+        f"pub_key: {wallet.public_key.hex()}\n"
+        f"pri_key: {wallet.private_key.hex()}\n"
+    )

@@ -1,10 +1,21 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import argparse
+import functools
 import getpass
 import json
 import os
 import re
-from typing import TYPE_CHECKING, Optional, Any, Dict
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Optional,
+    TYPE_CHECKING,
+    Union,
+)
 from urllib.parse import urlparse
 
 from neotermcolor import colored
@@ -189,3 +200,21 @@ def add_password_argument(parser: argparse.ArgumentParser):
         default=os.environ.get("GOV_PASSWORD", None),
         help="keystore password",
     )
+
+
+def get_hooks_from_args(
+        args: argparse.ArgumentParser, readonly: bool = True
+) -> Optional[Dict[str, Union[Iterable[Callable], Callable]]]:
+    hooks = {}
+    if not readonly:
+        hooks["request"] = (
+            functools.partial(confirm_transaction, yes=args.yes),
+            print_request,
+        )
+
+    if args.verbose:
+        hooks["response"] = print_response
+        if readonly:
+            hooks["request"] = print_request
+
+    return hooks

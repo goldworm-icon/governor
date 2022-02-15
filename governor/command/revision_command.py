@@ -16,18 +16,14 @@
 
 __all__ = ("RevisionCommand", "VersionCommand", "SetRevisionCommand")
 
-import functools
 from typing import Dict
 
 import icon
 from icon.wallet import KeyWallet
-
 from .command import Command
 from ..score.governance import GovernanceScore
 from ..utils import (
-    confirm_transaction,
-    print_request,
-    print_response,
+    get_hooks_from_args,
     print_result,
     resolve_nid,
     resolve_url,
@@ -38,7 +34,6 @@ from ..utils import (
 class RevisionCommand(Command):
     def __init__(self):
         super().__init__(name="revision", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = f"getRevision command of governance score"
@@ -50,8 +45,9 @@ class RevisionCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_governance_score(args, invoke=False)
-        revision: Dict[str, str] = score.get_revision(hooks=self._hooks)
+        revision: Dict[str, str] = score.get_revision(hooks=hooks)
         print_result(revision)
 
         return 0
@@ -60,7 +56,6 @@ class RevisionCommand(Command):
 class VersionCommand(Command):
     def __init__(self):
         super().__init__(name="version", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = f"getVersion command of governance score"
@@ -72,8 +67,9 @@ class VersionCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        hooks = get_hooks_from_args(args)
         score = _create_governance_score(args, invoke=False)
-        version: str = score.get_version(hooks=self._hooks)
+        version: str = score.get_version(hooks=hooks)
         print_result(version)
 
         return 0
@@ -101,11 +97,7 @@ class SetRevisionCommand(Command):
 
     @classmethod
     def _run(cls, args) -> bytes:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         revision: int = args.revision
         name: str = args.name
 

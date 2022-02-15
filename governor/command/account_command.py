@@ -5,12 +5,10 @@ from typing import Dict
 
 import icon
 from icon.data import Address
-
 from .command import Command
 from ..utils import (
     get_address_from_args,
-    print_request,
-    print_response,
+    get_hooks_from_args,
     print_result,
     resolve_url,
 )
@@ -48,10 +46,10 @@ class AccountCommand(Command, ABC):
     def _run(cls, args) -> int:
         url: str = resolve_url(args.url)
         address: Address = get_address_from_args(args)
+        hooks = get_hooks_from_args(args)
         _filter: int = args.filter
 
         if address:
-            hooks = {"request": print_request, "response": print_response}
             client: icon.Client = icon.create_client(url)
             result: Dict[str, str] = client.get_account(address, _filter=_filter, hooks=hooks)
             print_result(result)

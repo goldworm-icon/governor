@@ -13,8 +13,7 @@ from ..utils import (
     add_keystore_argument,
     get_address_from_args,
     get_coin_from_string,
-    print_request,
-    print_response,
+    get_hooks_from_args,
     print_result,
     resolve_nid,
     resolve_url,
@@ -42,9 +41,9 @@ class BalanceCommand(Command):
     def _run(cls, args) -> int:
         url: str = resolve_url(args.url)
         address: Address = get_address_from_args(args)
+        hooks = get_hooks_from_args(args)
 
         if address:
-            hooks = {"request": print_request, "response": print_response}
             client: icon.Client = icon.create_client(url)
             balance: int = client.get_balance(address, hooks=hooks)
             print_result(f"Balance: {loop_to_str(balance)}, {hex(balance)}")
@@ -69,10 +68,10 @@ class TotalSupplyCommand(Command):
     @classmethod
     def _run(cls, args) -> int:
         url: str = resolve_url(args.url)
-        hooks = {"request": print_request, "response": print_response}
+        hooks = get_hooks_from_args(args)
         client: icon.Client = icon.create_client(url)
         total_supply: int = client.get_total_supply(hooks=hooks)
-        print(f"total_supply: {total_supply}")
+        print_result(f"totalSupply: {loop_to_str(total_supply)}, {hex(total_supply)}")
         return 0
 
 
@@ -108,6 +107,7 @@ class TransferCommand(Command):
         to: Address = Address.from_string(args.to)
         step_limit: int = max(args.step_limit, 100_000)
         value: int = get_coin_from_string(args.value)
+        hooks = get_hooks_from_args(args)
         if not isinstance(value, int) or value <= 0:
             return -1
 
@@ -122,7 +122,6 @@ class TransferCommand(Command):
             .step_limit(step_limit)
         )
 
-        hooks = {"request": print_request, "response": print_response}
         client: icon.Client = icon.create_client(url)
         return client.send_transaction(
             builder.build(),

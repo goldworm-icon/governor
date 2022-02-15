@@ -14,17 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import functools
 from typing import Dict, Union
 
 import icon
 from icon.wallet import KeyWallet
-
 from .command import Command
 from ..score.governance import GovernanceScore
 from ..utils import (
-    confirm_transaction,
-    print_request,
+    get_hooks_from_args,
     print_response,
     resolve_nid,
     resolve_url,
@@ -46,7 +43,7 @@ class StepCostsCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args):
-        hooks = {"request": print_request, "response": print_response}
+        hooks = get_hooks_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
 
         result: Dict[str, str] = score.get_step_costs(hooks=hooks)
@@ -70,7 +67,7 @@ class StepPriceCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
-        hooks = {"request": print_request, "response": print_response}
+        hooks = get_hooks_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
 
         step_price: int = score.get_step_price(hooks=hooks)
@@ -128,10 +125,7 @@ class SetStepCostCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
+        hooks = get_hooks_from_args(args, readonly=False)
         step_type: str = args.step_type
         cost: int = args.cost
 
@@ -155,11 +149,7 @@ class SetStepPriceCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         step_price: int = args.step_price
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.set_step_price(step_price, hooks=hooks)
@@ -184,11 +174,7 @@ class SetMaxStepLimitCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         context_type: str = args.context_type
         value: int = args.value
 

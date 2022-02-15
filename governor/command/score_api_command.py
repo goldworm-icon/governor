@@ -6,14 +6,11 @@ import icon
 from icon.data import (
     Address,
 )
-
 from .command import Command
 from ..utils import (
     get_address_from_args,
-    print_request,
-    print_response,
+    get_hooks_from_args,
     print_result,
-    resolve_address,
     resolve_url,
 )
 
@@ -39,8 +36,7 @@ class ScoreApiCommand(Command):
 
     @classmethod
     def _run(cls, args) -> int:
-        hooks = {"request": print_request, "response": print_response}
-
+        hooks = get_hooks_from_args(args)
         address: Address = get_address_from_args(args)
         url: str = resolve_url(args.url)
 

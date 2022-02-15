@@ -21,8 +21,7 @@ from icon.utils import str_to_object_by_type
 from .command import Command
 from .. import result_type
 from ..utils import (
-    print_request,
-    print_response,
+    get_hooks_from_args,
     print_result,
     resolve_url,
 )
@@ -31,7 +30,6 @@ from ..utils import (
 class StatusCommand(Command):
     def __init__(self):
         super().__init__(name="status", readonly=True)
-        self._hooks = {"request": print_request, "response": print_response}
 
     def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
         desc = "ise_getStatus command"
@@ -49,9 +47,10 @@ class StatusCommand(Command):
     def _run(self, args) -> int:
         url: str = resolve_url(args.url)
         _filter: str = args.filter
+        hooks = get_hooks_from_args(args)
 
         client: icon.Client = icon.create_client(url)
-        result: Dict[str, str] = client.get_status(hooks=self._hooks)
+        result: Dict[str, str] = client.get_status(hooks=hooks)
         result: Dict[str, Any] = str_to_object_by_type(result_type.STATUS, result)
         print_result(result)
 

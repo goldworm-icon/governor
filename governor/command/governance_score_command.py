@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import functools
 from typing import Union, Dict
 
 import icon
@@ -10,9 +9,8 @@ from icon.wallet import KeyWallet
 from .command import Command
 from ..score.governance import GovernanceScore
 from ..utils import (
-    confirm_transaction,
     get_address_from_args,
-    print_request,
+    get_hooks_from_args,
     print_response,
     print_result,
     resolve_nid,
@@ -44,11 +42,7 @@ class DeployCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[int, str]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         score_path: str = args.score_path
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.deploy(score_path, hooks=hooks)
@@ -75,9 +69,8 @@ class ScoreStatusCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
-        hooks = {"request": print_request, "response": print_response}
         address: Address = get_address_from_args(args)
-
+        hooks = get_hooks_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
         result: Dict[str, str] = score.get_score_status(address, hooks=hooks)
         print_response(result)
@@ -99,7 +92,7 @@ class ServiceConfigCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
-        hooks = {"request": print_request, "response": print_response}
+        hooks = get_hooks_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
         result: Dict[str, str] = score.get_service_config(hooks=hooks)
         print_response(result)
@@ -124,11 +117,7 @@ class UpdateServiceConfigCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args):
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         service_flag: int = args.service_flag
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.update_service_config(service_flag, hooks=hooks)
@@ -157,11 +146,7 @@ class AcceptScoreCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         tx_hash: bytes = hex_to_bytes(args.tx_hash)
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.accept_score(tx_hash, hooks=hooks)
@@ -194,11 +179,7 @@ class RejectScoreCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         tx_hash: bytes = hex_to_bytes(args.tx_hash)
         reason: str = args.reason
 
@@ -223,11 +204,7 @@ class AddAuditorCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         address: Address = get_address_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.add_auditor(address, hooks=hooks)
@@ -250,11 +227,7 @@ class RemoveAuditorCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         address: Address = get_address_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.remove_auditor(address, hooks=hooks)
@@ -277,11 +250,7 @@ class AddToScoreBlackListCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         address: Address = get_address_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.add_to_score_black_list(address, hooks=hooks)
@@ -304,11 +273,7 @@ class RemoveFromScoreBlackListCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         address: Address = get_address_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.remove_from_score_black_list(address, hooks=hooks)
@@ -331,11 +296,7 @@ class AddImportWhiteListCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         import_stmt: str = args.import_stmt
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.add_import_white_list(import_stmt, hooks=hooks)
@@ -358,11 +319,7 @@ class RemoveImportWhiteListCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> Union[bytes, int]:
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
-
+        hooks = get_hooks_from_args(args, readonly=False)
         import_stmt: str = args.import_stmt
         score = _create_governance_score(args, invoke=not self.readonly)
         return score.remove_import_white_list(import_stmt, hooks=hooks)
@@ -382,8 +339,7 @@ class InScoreBlackListCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
-        hooks = {"request": print_request, "response": print_response}
-
+        hooks = get_hooks_from_args(args)
         address: Address = get_address_from_args(args)
         score = _create_governance_score(args, invoke=not self.readonly)
         is_score_in_black_list: bool = score.is_in_score_black_list(address, hooks=hooks)
@@ -411,8 +367,7 @@ class InImportWhiteListCommand(Command):
         score_parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
-        hooks = {"request": print_request, "response": print_response}
-
+        hooks = get_hooks_from_args(args)
         import_stmt: str = args.import_stmt
         score = _create_governance_score(args, invoke=not self.readonly)
         in_whitelist: bool = score.is_in_import_white_list(import_stmt, hooks=hooks)

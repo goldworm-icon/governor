@@ -1,4 +1,3 @@
-import functools
 import json
 import os
 from typing import Dict, Any, Optional
@@ -15,9 +14,7 @@ from icon.utils import hex_to_bytes
 from icon.wallet import KeyWallet
 from .command import Command
 from ..utils import (
-    confirm_transaction,
-    print_request,
-    print_response,
+    get_hooks_from_args,
     resolve_address,
     resolve_nid,
     resolve_url,
@@ -70,11 +67,7 @@ class DeployCommand(Command):
         wallet: KeyWallet = resolve_wallet(args)
         to: Address = resolve_address(args.to)
         step_limit: int = args.step_limit
-
-        hooks = {
-            "request": functools.partial(confirm_transaction, yes=args.yes),
-            "response": print_response
-        }
+        hooks = get_hooks_from_args(args, readonly=False)
 
         path: str = os.path.join(score_path, "package.json")
         if not os.path.isfile(path):
@@ -139,7 +132,7 @@ class DownloadCommand(Command):
         url: str = resolve_url(args.url)
         tx_hash: bytes = hex_to_bytes(args.tx_hash)
         path: str = self._get_path(args)
-        hooks = {"request": print_request, "response": print_response}
+        hooks = get_hooks_from_args(args)
 
         client: icon.Client = icon.create_client(url)
         tx: icon.data.Transaction = client.get_transaction(tx_hash, hooks=hooks)
