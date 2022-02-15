@@ -19,8 +19,8 @@ import logging
 import os
 import sys
 import time
-from icon.data import TransactionResult
 
+from icon.data import TransactionResult
 from . import __about__
 from .command import *
 from .constants import (
@@ -58,6 +58,7 @@ def main() -> int:
         IScoreCommand(),
         MainPRepsCommand(),
         MaxStepLimitCommand(),
+        NetworkInfoCommand(),
         PRepCommand(),
         PRepsCommand(),
         PRepStatsCommand(),

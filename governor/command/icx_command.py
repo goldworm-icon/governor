@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from typing import List
+
 import icon
-from icon.data import (
-    bytes_to_hex,
-    hex_to_bytes,
-    str_to_int,
-)
 from icon.data.address import Address
 from icon.data.block_header import BlockHeader
 from icon.data.validators import Validators
 from icon.data.vote import Votes
-from typing import List
-
+from icon.utils import (
+    bytes_to_hex,
+    hex_to_bytes,
+    str_to_int,
+)
 from .command import Command
 from ..utils import (
     print_request,

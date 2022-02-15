@@ -8,6 +8,7 @@ __all__ = (
     "IISSInfoCommand",
     "IScoreCommand",
     "MainPRepsCommand",
+    "NetworkInfoCommand",
     "PRepCommand",
     "PRepsCommand",
     "PRepStatsCommand",
@@ -24,11 +25,9 @@ import functools
 from typing import Dict, Any, List
 
 import icon
-from icon.data import (
-    Address,
-    str_to_object_by_type,
-)
+from icon.data import Address
 from icon.data.unit import loop_to_str
+from icon.utils import str_to_object_by_type
 from icon.wallet import KeyWallet
 from .command import Command
 from .. import result_type
@@ -148,14 +147,18 @@ class PRepsCommand(Command):
         parser.add_argument(
             "--end", type=int, nargs="?", default=0, help="end ranking"
         )
+        parser.add_argument(
+            "--height", type=int, default=-1, help="block height to query"
+        )
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
         start: int = args.start
         end: int = args.end
+        height: int = args.height
 
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_preps(start, end, hooks=self._hooks)
+        result: Dict[str, str] = score.get_preps(start, end, height, hooks=self._hooks)
 
         result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
         print_result(result)
@@ -174,12 +177,15 @@ class MainPRepsCommand(Command):
         parser = sub_parser.add_parser(
             self.name, parents=[common_parent_parser], help=desc
         )
-
+        parser.add_argument(
+            "--height", type=int, default=-1, help="block height to query"
+        )
         parser.set_defaults(func=self._run)
 
     def _run(self, args) -> int:
+        height: int = args.height
         score = _create_system_score(args, invoke=False)
-        result: Dict[str, str] = score.get_main_preps(hooks=self._hooks)
+        result: Dict[str, str] = score.get_main_preps(height, hooks=self._hooks)
         print_result(result)
 
         return 0
@@ -541,4 +547,24 @@ class ScoreOwnerCommand(Command):
         owner: Address = score.get_score_owner(address, self._hooks)
         print_result(owner)
 
+        return 0
+
+
+class NetworkInfoCommand(Command):
+    def __init__(self):
+        super().__init__(name="networkInfo", readonly=True)
+        self._hooks = {"request": print_request, "response": print_response}
+
+    def init(self, sub_parser, common_parent_parser, invoke_parent_parser):
+        desc = "Display network information"
+
+        parser = sub_parser.add_parser(
+            self.name, parents=[common_parent_parser], help=desc
+        )
+        parser.set_defaults(func=self._run)
+
+    def _run(self, args) -> int:
+        score = _create_system_score(args, invoke=False)
+        ret = score.get_network_info(self._hooks)
+        print_result(ret)
         return 0

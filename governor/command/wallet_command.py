@@ -4,7 +4,7 @@ __all__ = ("WalletCommand", "CreateWalletCommand")
 import os
 
 import icon
-from icon.data import hex_to_bytes
+from icon.utils import hex_to_bytes
 from .command import Command
 from .. import utils
 

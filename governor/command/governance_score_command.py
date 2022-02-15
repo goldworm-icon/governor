@@ -5,9 +5,8 @@ from typing import Union, Dict
 
 import icon
 from icon.data import Address
-from icon.data.utils import hex_to_bytes
+from icon.utils import hex_to_bytes
 from icon.wallet import KeyWallet
-
 from .command import Command
 from ..score.governance import GovernanceScore
 from ..utils import (

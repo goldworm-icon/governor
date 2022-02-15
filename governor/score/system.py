@@ -39,7 +39,7 @@ class SystemScore(object):
         params = self._create_query_call(method, call_params)
         return self._client.call(params, hooks=hooks)
 
-    def get_preps(self, start: int, end: int, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
+    def get_preps(self, start: int, end: int, height: int, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
         method = "getPReps"
 
         call_params = {}
@@ -49,11 +49,15 @@ class SystemScore(object):
             call_params["endRanking"] = end
 
         params = self._create_query_call(method, call_params)
+        if height > -1:
+            params["height"] = hex(height)
         return self._client.call(params, hooks=hooks)
 
-    def get_main_preps(self, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
+    def get_main_preps(self, height: int, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
         method = "getMainPReps"
         params = self._create_query_call(method, {})
+        if height > -1:
+            params["height"] = hex(height)
         return self._client.call(params, hooks=hooks)
 
     def get_sub_preps(self, hooks: Dict[str, Callable] = None) -> Dict[str, Any]:
@@ -138,6 +142,11 @@ class SystemScore(object):
         call_params = {"score": score}
         params = self._create_query_call("getScoreOwner", call_params)
         return Address.from_string(self._client.call(params, hooks=hooks))
+
+    def get_network_info(self, hooks: Dict[str, Callable] = None) -> Dict[str, str]:
+        method = "getNetworkInfo"
+        params = self._create_query_call(method, None)
+        return self._client.call(params, hooks=hooks)
 
     def _create_call_tx(self, method: str, params: Dict[str, Any] = None, **kwargs) -> Transaction:
         builder = (

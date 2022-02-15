@@ -11,13 +11,8 @@ from icon.data import (
     Address,
     SYSTEM_SCORE_ADDRESS,
 )
-from icon.data.utils import (
-    hex_to_bytes
-)
-from icon.wallet import (
-    KeyWallet
-)
-
+from icon.utils import hex_to_bytes
+from icon.wallet import KeyWallet
 from .command import Command
 from ..utils import (
     confirm_transaction,

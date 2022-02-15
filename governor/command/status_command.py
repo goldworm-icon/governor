@@ -17,8 +17,7 @@
 from typing import Dict, Any
 
 import icon
-from icon.data.utils import str_to_object_by_type
-
+from icon.utils import str_to_object_by_type
 from .command import Command
 from .. import result_type
 from ..utils import (
