@@ -133,7 +133,7 @@ def main() -> int:
 
 
 def _init_logger(args):
-    if not hasattr(args, "log"):
+    if not hasattr(args, "log") or args.log is None:
         return
 
     log_level = {
@@ -152,6 +152,9 @@ def _init_logger(args):
 
 
 def _print_arguments(args):
+    if not args.verbose:
+        return
+
     arguments = {}
     for name, value in vars(args).items():
         if name == "func":
