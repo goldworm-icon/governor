@@ -152,7 +152,7 @@ def _init_logger(args):
 
 
 def _print_arguments(args):
-    if not args.verbose:
+    if not getattr(args, "verbose", False):
         return
 
     arguments = {}
@@ -170,7 +170,8 @@ def _print_result(args, result: Union[int, bytes]) -> int:
     ret = 0
 
     if isinstance(result, bytes):
-        if len(result) == 32 and args.no_result:
+        print(result.hex())
+        if len(result) == 32 and not args.no_result:
             ret = _print_tx_result(args.url, result)
 
     return ret
