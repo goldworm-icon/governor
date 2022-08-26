@@ -28,6 +28,7 @@ from icon.data import Address
 from icon.data.unit import loop_to_str
 from icon.utils import str_to_object_by_type
 from icon.wallet import KeyWallet
+
 from .command import Command
 from .. import result_type
 from ..score.system import SystemScore
@@ -160,6 +161,8 @@ class PRepsCommand(Command):
         result: Dict[str, str] = score.get_preps(start, end, height, hooks=hooks)
 
         result: Dict[str, Any] = str_to_object_by_type(result_type.GET_PREPS, result)
+        for i, prep in enumerate(result["preps"]):
+            prep["rank"] = i + 1
         print_result(result)
 
         return 0
