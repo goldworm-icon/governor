@@ -20,7 +20,9 @@ import os
 import sys
 import time
 
+import icon
 from icon.data import TransactionResult
+
 from . import __about__
 from .command import *
 from .constants import (

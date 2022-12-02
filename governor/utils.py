@@ -7,6 +7,7 @@ import getpass
 import json
 import os
 import re
+import sys
 from typing import (
     Any,
     Callable,
@@ -18,10 +19,10 @@ from typing import (
 )
 from urllib.parse import urlparse
 
-from neotermcolor import colored
-
 from icon.data import RpcRequest, TransactionResult, Address
 from icon.wallet import KeyWallet, LightWallet
+from neotermcolor import colored
+
 from .constants import COLUMN, PREDEFINED_URLS, PREDEFINED_ADDRESSES
 
 if TYPE_CHECKING:
@@ -121,7 +122,8 @@ def print_with_title(title: str, data: Any):
     title = f"[{title}] {'=' * sep_count}"
     title = colored(title, "green", attrs=["bold"])
 
-    print(f"{title}\n{data}\n")
+    print(f"{title}", file=sys.stderr)
+    print(f"{data}\n")
 
 
 def print_arguments(data: Any):

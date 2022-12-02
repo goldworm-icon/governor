@@ -5,6 +5,7 @@ import os
 
 import icon
 from icon.utils import hex_to_bytes
+
 from .command import Command
 from .. import utils
 
@@ -25,14 +26,10 @@ class WalletCommand(Command):
 
     @classmethod
     def _run(cls, args) -> int:
-        path = args.path
+        path: str = args.path
 
         if os.path.isfile(path):
-            password = args.password
-            if password is None:
-                print("Password is needed")
-                return 1
-
+            password: str = utils.get_password(args.password)
             wallet = icon.KeyWallet.load(path, password)
         else:
             private_key: str = path
