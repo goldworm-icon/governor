@@ -39,7 +39,9 @@ PREDEFINED_URLS = {
     "sejong": ("https://sejong.net.solidwallet.io/api/v3", 0x53),
     "testnet": ("https://test-ctz.solidwallet.io/api/v3", 2),
     "qanet": ("https://eunsoo.net.solidwallet.io/api/v3", 80),
-    "zicon": ("https://zicon.net.solidwallet.io/api/v3", 1),
+    "havah": ("https://ctz.havah.io/api/v3", 256),
+    "vega": ("https://ctz.vega.havah.io/api/v3", 257),
+    "deneb": ("https://ctz.dev.havah.io/api/v3", 272),
 }
 
 PREDEFINED_ADDRESSES = {
