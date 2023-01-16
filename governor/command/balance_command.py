@@ -8,6 +8,7 @@ from icon.builder import TransactionBuilder
 from icon.data import Address
 from icon.data.unit import loop_to_str
 from icon.wallet import KeyWallet
+
 from .command import Command
 from ..utils import (
     add_keystore_argument,
@@ -19,6 +20,8 @@ from ..utils import (
     resolve_url,
     resolve_wallet,
 )
+
+TRANSFER_FEE = 12_500_000_000 * 100_000
 
 
 class BalanceCommand(Command):
@@ -97,6 +100,11 @@ class TransferCommand(Command):
             default=0,
             help="value to transfer in loop. ex) 100 or 1e18"
         )
+        parser.add_argument(
+            "--all",
+            action="store_true",
+            help="Transfer all balances to 'to' address"
+        )
 
         parser.set_defaults(func=self._run)
 
@@ -106,12 +114,18 @@ class TransferCommand(Command):
         nid: int = resolve_nid(args.nid, args.url)
         to: Address = Address.from_string(args.to)
         step_limit: int = max(args.step_limit, 100_000)
-        value: int = get_coin_from_string(args.value)
+        transfer_all: bool = args.all
         hooks = get_hooks_from_args(args)
+
+        client: icon.Client = icon.create_client(url)
+        wallet: KeyWallet = resolve_wallet(args)
+
+        if not transfer_all:
+            value: int = get_coin_from_string(args.value)
+        else:
+            value: int = client.get_balance(wallet.address) - TRANSFER_FEE
         if not isinstance(value, int) or value <= 0:
             return -1
-
-        wallet: KeyWallet = resolve_wallet(args)
 
         builder = (
             TransactionBuilder()
@@ -122,7 +136,6 @@ class TransferCommand(Command):
             .step_limit(step_limit)
         )
 
-        client: icon.Client = icon.create_client(url)
         return client.send_transaction(
             builder.build(),
             hooks=hooks,
