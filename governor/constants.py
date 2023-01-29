@@ -17,6 +17,7 @@
 from icon.data.address import (
     Address,
     AddressPrefix,
+    BURN_ADDRESS,
     GOVERNANCE_SCORE_ADDRESS,
     SYSTEM_SCORE_ADDRESS,
     TREASURY_ADDRESS,
@@ -50,6 +51,7 @@ PREDEFINED_ADDRESSES = {
     "governance": GOVERNANCE_SCORE_ADDRESS,
     "gov": GOVERNANCE_SCORE_ADDRESS,
     "treasury": TREASURY_ADDRESS,
+    "burn": BURN_ADDRESS,
     "cpft": Address.from_string("cxdca1178010b5368aea929ad5c06abee64b91acc2"),
     "cpst": Address.from_string("cxd965531d1cce5daad1d1d3ee1efb39ce68f442fc"),
     "cps": Address.from_string("cx9f4ab72f854d3ccdc59aa6f2c3e2215dd62e879f"),
