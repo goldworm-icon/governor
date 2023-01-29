@@ -19,10 +19,10 @@ from typing import (
 )
 from urllib.parse import urlparse
 
-from icon.data import RpcRequest, TransactionResult, Address
-from icon.wallet import KeyWallet, LightWallet
 from neotermcolor import colored
 
+from icon.data import RpcRequest, TransactionResult, Address
+from icon.wallet import KeyWallet, LightWallet
 from .constants import COLUMN, PREDEFINED_URLS, PREDEFINED_ADDRESSES
 
 if TYPE_CHECKING:
@@ -104,6 +104,9 @@ def resolve_nid(nid: int, url: str) -> int:
 
 def resolve_wallet(args) -> KeyWallet:
     path: str = args.keystore
+    if not os.path.exists(path):
+        raise ValueError(f"File not found: {path}")
+
     password: str = get_password(args.password)
     return KeyWallet.load(path, password)
 
