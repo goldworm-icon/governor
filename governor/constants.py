@@ -23,11 +23,7 @@ from icon.data.address import (
     TREASURY_ADDRESS,
 )
 
-
 EOA_ADDRESS = Address.from_string("hx1234567890123456789012345678901234567890")
-
-DEFAULT_URL = "http://127.0.0.1:9000/api/v3"
-DEFAULT_NID = 3
 
 COLUMN = 80
 
@@ -35,7 +31,7 @@ PREDEFINED_URLS = {
     "berlin": ("https://berlin.net.solidwallet.io/api/v3", 7),
     "gochain": ("http://localhost:9082/api/v3", 3),
     "lisbon": ("https://lisbon.net.solidwallet.io/api/v3", 2),
-    "localnet": (DEFAULT_URL, DEFAULT_NID),
+    "localnet": ("http://127.0.0.1:9000/api/v3", 3),
     "mainnet": ("https://ctz.solidwallet.io/api/v3", 1),
     "sejong": ("https://sejong.net.solidwallet.io/api/v3", 0x53),
     "testnet": ("https://test-ctz.solidwallet.io/api/v3", 2),
@@ -57,3 +53,5 @@ PREDEFINED_ADDRESSES = {
     "cps": Address.from_string("cx9f4ab72f854d3ccdc59aa6f2c3e2215dd62e879f"),
     "zero": Address.from_int(AddressPrefix.EOA, 0)
 }
+
+DEFAULT_URL, DEFAULT_NID = PREDEFINED_URLS["mainnet"]
