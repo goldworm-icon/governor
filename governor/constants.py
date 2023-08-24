@@ -1,19 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2019 ICON Foundation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from icon.data.address import (
     Address,
     AddressPrefix,
@@ -31,14 +17,14 @@ PREDEFINED_URLS = {
     "berlin": ("https://berlin.net.solidwallet.io/api/v3", 7),
     "gochain": ("http://localhost:9082/api/v3", 3),
     "lisbon": ("https://lisbon.net.solidwallet.io/api/v3", 2),
-    "localnet": ("http://127.0.0.1:9000/api/v3", 3),
-    "mainnet": ("https://ctz.solidwallet.io/api/v3", 1),
-    "sejong": ("https://sejong.net.solidwallet.io/api/v3", 0x53),
+    "localnet": ("http://127.0.0.1:9080/api/v3", 71),
+    "icon": ("https://ctz.solidwallet.io/api/v3", 1),
     "testnet": ("https://test-ctz.solidwallet.io/api/v3", 2),
     "qanet": ("https://eunsoo.net.solidwallet.io/api/v3", 80),
     "havah": ("https://ctz.havah.io/api/v3", 256),
     "vega": ("https://ctz.vega.havah.io/api/v3", 257),
     "deneb": ("https://ctz.dev.havah.io/api/v3", 272),
+    "altair": ("https://ctz.altair.havah.io/api/v3", 272),
 }
 
 PREDEFINED_ADDRESSES = {
@@ -54,4 +40,4 @@ PREDEFINED_ADDRESSES = {
     "zero": Address.from_int(AddressPrefix.EOA, 0)
 }
 
-DEFAULT_URL, DEFAULT_NID = PREDEFINED_URLS["mainnet"]
+DEFAULT_URL, DEFAULT_NID = PREDEFINED_URLS["icon"]
