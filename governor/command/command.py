@@ -12,7 +12,7 @@ class Command(ABC):
 
     @property
     def name(self) -> str:
-        return self._name
+        return self._name.lower()
 
     @property
     def readonly(self) -> bool:

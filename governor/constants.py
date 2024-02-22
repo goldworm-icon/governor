@@ -24,7 +24,6 @@ PREDEFINED_URLS = {
     "havah": ("https://ctz.havah.io/api/v3", 256),
     "vega": ("https://ctz.vega.havah.io/api/v3", 257),
     "deneb": ("https://ctz.dev.havah.io/api/v3", 272),
-    "altair": ("https://ctz.altair.havah.io/api/v3", 272),
 }
 
 PREDEFINED_ADDRESSES = {
