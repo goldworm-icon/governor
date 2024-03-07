@@ -19,6 +19,7 @@ PREDEFINED_URLS = {
     "lisbon": ("https://lisbon.net.solidwallet.io/api/v3", 2),
     "localnet": ("http://127.0.0.1:9080/api/v3", 71),
     "icon": ("https://ctz.solidwallet.io/api/v3", 1),
+    "gw": ("http://goldworm.duckdns.org:9000/api/v3", 1),
     "testnet": ("https://test-ctz.solidwallet.io/api/v3", 2),
     "qanet": ("https://eunsoo.net.solidwallet.io/api/v3", 80),
     "havah": ("https://ctz.havah.io/api/v3", 256),

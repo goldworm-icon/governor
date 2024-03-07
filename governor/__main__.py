@@ -33,7 +33,7 @@ def main() -> int:
         BlockHeaderByHashCommand(),
         BondCommand(),
         BonderListCommand(),
-        ConsensusInfoCommand(),
+        # ConsensusInfoCommand(),
         CreateWalletCommand(),
         DataByHashCommand(),
         DelegationCommand(),
