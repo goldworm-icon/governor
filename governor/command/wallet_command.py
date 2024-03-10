@@ -5,7 +5,6 @@ import os
 
 import icon
 from icon.utils import hex_to_bytes
-
 from .command import Command
 from .. import utils
 
@@ -71,6 +70,7 @@ class CreateWalletCommand(Command):
 def _print_wallet_info(wallet: icon.Wallet):
     print(
         f"address: {wallet.address}\n"
-        f"pub_key: {wallet.public_key.hex()}\n"
         f"pri_key: {wallet.private_key.hex()}\n"
+        f"pub_key: {wallet.compressed_public_key.hex()}\n"
+        f"pub_key: {wallet.public_key.hex()}\n"
     )
