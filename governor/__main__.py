@@ -4,9 +4,7 @@ import os
 import sys
 import time
 
-import icon
 from icon.data import TransactionResult
-
 from . import __about__
 from .command import *
 from .constants import (
@@ -231,6 +229,7 @@ def _get_predefined_envs() -> str:
 
 def create_common_parser() -> argparse.ArgumentParser:
     default_url: str = os.environ.get("GOV_URL", DEFAULT_URL)
+    default_nid: str = os.environ.get("GOV_NID", DEFAULT_NID)
 
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument(
@@ -246,7 +245,7 @@ def create_common_parser() -> argparse.ArgumentParser:
         "-n",
         type=int,
         required=False,
-        default=-1,
+        default=default_nid,
         help=f"networkId default({DEFAULT_NID} ex) mainnet(1), testnet(2)",
     )
     parent_parser.add_argument("--verbose", "-v", required=False, action="store_true")
